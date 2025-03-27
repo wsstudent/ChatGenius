@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/backend/mallchat-chat-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/mallchat-common-starter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/mallchat-frequency-control/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/mallchat-oss-starter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/mallchat-redis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/mallchat-transaction/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/backend/mallchat-tools/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/backend/src/main/resources" charset="UTF-8" />
   </component>
