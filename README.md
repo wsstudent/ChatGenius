@@ -28,6 +28,25 @@ docker run \
 ## rocketmq
 
 ```bash
+# 创建配置文件
+touch ~/DockerData/rocketmq/broker/conf/broker.conf
+
+``` 
+编辑broker.conf，填入如下内容
+```
+brokerClusterName=DefaultCluster
+brokerName=broker-a
+brokerId=0
+deleteWhen=04
+fileReservedTime=48
+brokerRole=ASYNC_MASTER
+flushDiskType=ASYNC_FLUSH
+namesrvAddr=rocketmq-namesrv:9876
+```
+
+
+```bash
+
 docker network create rocketmq-net
 
 # 启动 NameServer
@@ -42,17 +61,16 @@ docker run \
           sh mqnamesrv
 
 # 启动 Broker
-docker run \
-          -d \
-          --name rocketmq-broker \
-          --net rocketmq-net \
-          -p 10911:10911 -p 10909:10909 \
-          -v ~/DockerData/rocketmq/broker/data:/data \
-          -v ~/DockerData/rocketmq/broker/logs:/logs \
-          -v ~/DockerData/rocketmq/broker/conf/broker.conf:/home/rocketmq/store/config/broker.conf \
-          -e "JAVA_OPT_EXT=-Drocketmq.broker.accessKey=root -Drocketmq.broker.secretKey=123456" \
-          apache/rocketmq:latest \
-          sh mqbroker -c /home/rocketmq/store/config/broker.conf
+docker run -d \
+  --name rocketmq-broker \
+  -p 10911:10911 -p 10909:10909 -p 10912:10912 \
+  -v ~/DockerData/rocketmq/broker/logs:/home/rocketmq/logs \
+  -v ~/DockerData/rocketmq/broker/store:/home/rocketmq/store \
+  -v ~/DockerData/rocketmq/broker/conf:/home/rocketmq/store/config \
+  -e "NAMESRV_ADDR=127.0.0.1:9876" \
+  apache/rocketmq:latest \
+  sh mqbroker -c /home/rocketmq/store/config/broker.conf
+
 
 ```
 
