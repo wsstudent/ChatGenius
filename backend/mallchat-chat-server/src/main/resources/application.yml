@@ -11,7 +11,7 @@ mybatis-plus:
 spring:
   profiles:
     #运行的环境
-    active: my-test
+    active: test
   application:
     name: mallchat
   datasource:
@@ -36,9 +36,16 @@ spring:
     database: 0
     # 连接超时时间
     timeout: 1800000
-    # 直接在这里设置用户名和密码（不要嵌套）
-    username: ${mallchat.redis.username}
-    password: ${mallchat.redis.password}
+  # 新增 Redisson 配置
+  redisson:
+    config:
+      singleServerConfig:
+        address: "redis://${mallchat.redis.host}:${mallchat.redis.port}"
+        username: ${mallchat.redis.username}
+        password: ${mallchat.redis.password}
+        database: 0
+
+
   jackson:
     serialization:
       write-dates-as-timestamps: true
@@ -46,7 +53,6 @@ jwt:
   secret: ${mallchat.jwt.secret}
 wx:
   mp:
-    #    callback: http://f4cd-113-92-129-127.ngrok.io
     callback: ${mallchat.wx.callback}
     configs:
       - appId: ${mallchat.wx.appId} # 第一个公众号的appid
@@ -65,7 +71,7 @@ chatai:
     minute: 3 # 每个用户每3分钟可以请求一次
     AIUserId: ${mallchat.chatglm2.uid}
 rocketmq:
-  name-server: ${rocketmq.name-server}
+  name-server: ${mallchat.rocketmq.name-server}
   # 默认的消息组
   producer:
     group: chatGroup
@@ -75,14 +81,14 @@ rocketmq:
     retry-times-when-send-failed: 2 # 同步发送消息时，失败重试次数。默认为 2 次。
     retry-times-when-send-async-failed: 2 # 异步发送消息时，失败重试次数。默认为 2 次。
     retry-next-server: false # 发送消息给 Broker 时，如果发送失败，是否重试另外一台 Broker 。默认为 false
-    access-key: ${rocketmq.access-key} # Access Key ，可阅读 https://github.com/apache/rocketmq/blob/master/docs/cn/acl/user_guide.md 文档
-    secret-key: ${rocketmq.secret-key} # Secret Key
-    enable-msg-trace: true # 是否开启消息轨迹功能。默认为 true 开启。可阅读 https://github.com/apache/rocketmq/blob/master/docs/cn/msg_trace/user_guide.md 文档
+    access-key: ${mallchat.rocketmq.access-key} # Access Key
+    secret-key: ${mallchat.rocketmq.secret-key} # Secret Key
+    enable-msg-trace: true # 是否开启消息轨迹功能。默认为 true 开启。
     customized-trace-topic: RMQ_SYS_TRACE_TOPIC # 自定义消息轨迹的 Topic 。默认为 RMQ_SYS_TRACE_TOPIC 。
   # Consumer 配置项
   consumer:
-    access-key: ${rocketmq.access-key} # Access Key ，可阅读 https://github.com/apache/rocketmq/blob/master/docs/cn/acl/user_guide.md 文档
-    secret-key: ${rocketmq.secret-key} # Secret Key
-    listeners: # 配置某个消费分组，是否监听指定 Topic 。结构为 Map<消费者分组, <Topic, Boolean>> 。默认情况下，不配置表示监听。
+    access-key: ${mallchat.rocketmq.access-key} # Access Key
+    secret-key: ${mallchat.rocketmq.secret-key} # Secret Key
+    listeners: # 配置某个消费分组，是否监听指定 Topic 。
       erbadagang-consumer-group:
         topic1: false # 关闭 test-consumer-group 对 topic1 的监听消费
