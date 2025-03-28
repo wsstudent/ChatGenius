@@ -20,44 +20,44 @@ const toggleGroupListShow = () => (groupStore.showGroupList = !groupStore.showGr
 const isPc = computed(() => client === 'PC')
 
 const menuList = [
+  // {
+  //   name: '',
+  //   desc: '哔哩哔哩',
+  //   icon: 'bilibili',
+  //   handler: () => {
+  //     window.open('https://space.bilibili.com/146719540', '_blank')
+  //   },
+  // },
+  // {
+  //   name: '项目文档',
+  //   desc: '语雀',
+  //   icon: 'yuque',
+  //   handler: () => {
+  //     window.open('https://www.yuque.com/snab/planet/cef1mcko4fve0ur3', '_blank')
+  //   },
+  // },
+  // {
+  //   name: '618超优惠',
+  //   desc: '腾讯云',
+  //   icon: 'qcloud',
+  //   handler: () => {
+  //     window.open('https://curl.qcloud.com/qSaH0JLT', '_blank')
+  //   },
+  // },
   {
-    name: '',
-    desc: '哔哩哔哩',
-    icon: 'bilibili',
-    handler: () => {
-      window.open('https://space.bilibili.com/146719540', '_blank')
-    },
-  },
-  {
-    name: '项目文档',
-    desc: '语雀',
-    icon: 'yuque',
-    handler: () => {
-      window.open('https://www.yuque.com/snab/planet/cef1mcko4fve0ur3', '_blank')
-    },
-  },
-  {
-    name: '618超优惠',
-    desc: '腾讯云',
-    icon: 'qcloud',
-    handler: () => {
-      window.open('https://curl.qcloud.com/qSaH0JLT', '_blank')
-    },
-  },
-  {
-    name: '后端源码',
+    name: ' ',
     desc: 'MallChatWeb Server',
     icon: 'github',
     handler: () => {
-      window.open('https://github.com/zongzibinbin/MallChat', '_blank')
+      window.open('https://github.com/wsstudent/', '_blank')
     },
   },
   {
-    name: '前端源码',
+    name: ' ',
     desc: 'MallChatWeb Web',
     icon: 'github',
     handler: () => {
-      window.open('https://github.com/Evansy/MallChatWeb', '_blank')
+      window.open('https://github.com/yukinoa0', '_blank')
     },
   },
 ]
@@ -90,10 +90,10 @@ const menuList = [
     </div>
     <div class="menu">
       <el-tooltip effect="dark" :placement="isPc ? 'right' : 'bottom'">
-        <template #content>
-          <img class="icon-wechat-qrcode" :src="qrcode" alt="wx qrcode" />
-        </template>
-        <Icon icon="weixin" :size="28" colorful />
+<!--        <template #content>-->
+<!--          <img class="icon-wechat-qrcode" :src="qrcode" alt="wx qrcode" />-->
+<!--        </template>-->
+<!--        <Icon icon="weixin" :size="28" colorful />-->
       </el-tooltip>
       <a
         v-for="(item, index) in menuList"

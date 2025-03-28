@@ -1,12 +1,16 @@
 import { mergeConfig, loadEnv } from 'vite'
 import baseConfig from './vite.config.base'
-
+import vue from '@vitejs/plugin-vue'
+import vueDevTools from 'vite-plugin-vue-devtools'
 const lifecycle = process.env.npm_lifecycle_event
 const isHttpsLifecycle = lifecycle === 'dev:https'
 
 export default mergeConfig(
   {
     mode: 'development', // vite开发模式
+    plugins: [
+    vueDevTools(),
+    ],
     server: {
       port: 9988,
       open: false, // 自动打开浏览器

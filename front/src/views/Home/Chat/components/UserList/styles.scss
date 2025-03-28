@@ -53,7 +53,7 @@
     width: 200px;
     height: 100%;
     padding: 8px 12px;
-    background-color: var(--background-secondary);
+    background-color: rgba(var(--background-secondary-rgb, 40, 40, 40), 0.8); // 修改为半透明背景
     border-radius: 8px;
     transition: transform 0.3s ease;
     transform: translateX(100%);

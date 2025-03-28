@@ -13,7 +13,7 @@
 
   /* font */
   --font-placeholder: #a8abb2;
-  --font-main: #fff;
+  --font-main: rgba(255, 255, 255, 0.24);
   --font-base: #333;
   --font-gray: #666;
   --font-light: #999;
@@ -23,7 +23,7 @@
   /* 背景色 */
   --background-indigo: #2c3e50;
   --background-wrapper: #272a37;
-  --background-secondary: #323644;
+  --background-secondary: rgba(50, 54, 68, 0.17);
   --background-black-half: rgba(0, 0, 0, 50%);
   --background-dark: rgba(39, 42, 55, 40%);
   --background-mask: rgba(255, 255, 255, 20%);
