@@ -7,13 +7,17 @@ import com.abin.mallchat.common.common.config.ThreadPoolConfig;
 import com.abin.mallchat.common.common.constant.RedisKey;
 import com.abin.mallchat.common.common.event.UserOfflineEvent;
 import com.abin.mallchat.common.common.event.UserOnlineEvent;
+import com.abin.mallchat.common.common.exception.BusinessException;
 import com.abin.mallchat.common.common.utils.RedisUtils;
 import com.abin.mallchat.common.user.dao.UserDao;
 import com.abin.mallchat.common.user.domain.dto.WSChannelExtraDTO;
 import com.abin.mallchat.common.user.domain.entity.User;
 import com.abin.mallchat.common.user.domain.enums.RoleEnum;
 import com.abin.mallchat.common.user.domain.enums.WSBaseResp;
+import com.abin.mallchat.common.user.domain.vo.request.user.PwdLoginReq;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSAuthorize;
+import com.abin.mallchat.common.user.domain.vo.request.ws.WSPasswordLoginReq;
+import com.abin.mallchat.common.user.domain.vo.response.user.UserInfoResp;
 import com.abin.mallchat.common.user.service.IRoleService;
 import com.abin.mallchat.common.user.service.LoginService;
 import com.abin.mallchat.common.user.service.WebSocketService;
@@ -111,6 +115,30 @@ public class WebSocketServiceImpl implements WebSocketService {
         //返回给前端（channel必在本地）
         sendMsg(channel, WSAdapter.buildLoginResp(wxMpQrCodeTicket));
     }
+
+   @Override
+   public void passwordLogin(Channel channel, WSPasswordLoginReq wsPasswordLoginReq) {
+       try {
+           // 创建登录请求对象
+           PwdLoginReq loginReq = new PwdLoginReq();
+           loginReq.setUsername(wsPasswordLoginReq.getUsername());
+           loginReq.setPassword(wsPasswordLoginReq.getPassword());
+
+           try {
+               // 调用登录服务验证用户名密码
+               UserInfoResp userInfoResp = loginService.loginByPassword(loginReq);
+               // 获取用户信息
+               User user = userDao.getById(userInfoResp.getId());
+               // 登录成功，更新状态
+               loginSuccess(channel, user, userInfoResp.getToken());
+           } catch (BusinessException e) {
+               sendMsg(channel, WSBaseResp.build(1000, e.getMessage()));
+           }
+       } catch (Exception e) {
+           log.error("密码登录异常", e);
+           sendMsg(channel, WSBaseResp.build(1000, "系统异常，请稍后再试"));
+       }
+   }
 
     /**
      * 获取不重复的登录的code，微信要求最大不超过int的存储极限

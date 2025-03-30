@@ -2,7 +2,10 @@ package com.abin.mallchat.common.user.domain.vo.response.user;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Description: 用户信息返回
@@ -10,6 +13,9 @@ import lombok.Data;
  * Date: 2023-03-22
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @ApiModel("用户详情")
 public class UserInfoResp {
 
@@ -28,4 +34,8 @@ public class UserInfoResp {
     @ApiModelProperty(value = "剩余改名次数")
     private Integer modifyNameChance;
 
+    @ApiModelProperty("token")
+    private String token;
+
 }
+

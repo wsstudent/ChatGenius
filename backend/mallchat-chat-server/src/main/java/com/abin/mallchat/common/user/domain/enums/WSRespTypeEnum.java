@@ -27,8 +27,7 @@ public enum WSRespTypeEnum {
     MARK(8, "消息标记", WSMsgMark.class),
     RECALL(9, "消息撤回", WSMsgRecall.class),
     APPLY(10, "好友申请", WSFriendApply.class),
-    MEMBER_CHANGE(11, "成员变动", WSMemberChange.class),
-    ;
+    MEMBER_CHANGE(11, "成员变动", WSMemberChange.class);
 
     private final Integer type;
     private final String desc;

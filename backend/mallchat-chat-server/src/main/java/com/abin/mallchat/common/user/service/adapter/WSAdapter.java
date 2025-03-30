@@ -10,6 +10,7 @@ import com.abin.mallchat.common.user.domain.entity.User;
 import com.abin.mallchat.common.user.domain.enums.ChatActiveStatusEnum;
 import com.abin.mallchat.common.user.domain.enums.WSBaseResp;
 import com.abin.mallchat.common.user.domain.enums.WSRespTypeEnum;
+import com.abin.mallchat.common.user.domain.vo.response.user.UserInfoResp;
 import com.abin.mallchat.common.user.domain.vo.response.ws.*;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.springframework.beans.BeanUtils;

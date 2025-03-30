@@ -29,19 +29,27 @@ public class TokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 添加详细调试信息
+        System.out.println("TokenInterceptor被调用: " + request.getRequestURI());
+        log.error("TokenInterceptor处理请求: " + request.getRequestURI()); // 使用ERROR级别确保一定会显示
+
+
         //获取用户登录token
         String token = getToken(request);
         Long validUid = loginService.getValidUid(token);
+
         if (Objects.nonNull(validUid)) {//有登录态
             request.setAttribute(ATTRIBUTE_UID, validUid);
+            MDC.put(MDCKey.UID, String.valueOf(validUid));
         } else {
             boolean isPublicURI = isPublicURI(request.getRequestURI());
             if (!isPublicURI) {//又没有登录态，又不是公开路径，直接401
                 HttpErrorEnum.ACCESS_DENIED.sendHttpError(response);
                 return false;
             }
+            // 对于公开路径，使用默认值
+            MDC.put(MDCKey.UID, "0");
         }
-        MDC.put(MDCKey.UID, String.valueOf(validUid));
         return true;
     }
 
@@ -56,8 +64,16 @@ public class TokenInterceptor implements HandlerInterceptor {
      * @param requestURI
      */
     private boolean isPublicURI(String requestURI) {
-        String[] split = requestURI.split("/");
-        return split.length > 2 && "public".equals(split[3]);
+    // 更精确的匹配方式，使用startsWith或正则表达式
+    if (requestURI.startsWith("/capi/user/login/")) {
+        return true;
+    }
+
+    // 输出日志，便于调试
+    log.debug("检查公开路径: {}", requestURI);
+
+    String[] split = requestURI.split("/");
+    return split.length > 3 && "public".equals(split[3]);
     }
 
     private String getToken(HttpServletRequest request) {

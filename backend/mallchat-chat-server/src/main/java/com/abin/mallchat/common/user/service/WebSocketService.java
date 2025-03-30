@@ -2,6 +2,7 @@ package com.abin.mallchat.common.user.service;
 
 import com.abin.mallchat.common.user.domain.enums.WSBaseResp;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSAuthorize;
+import com.abin.mallchat.common.user.domain.vo.request.ws.WSPasswordLoginReq;
 import io.netty.channel.Channel;
 
 public interface WebSocketService {
@@ -11,6 +12,13 @@ public interface WebSocketService {
      * @param channel
      */
     void handleLoginReq(Channel channel);
+
+    /**
+     * 处理用户登录请求，需要返回
+     *
+     * @param channel
+     */
+    void passwordLogin(Channel channel, WSPasswordLoginReq wsPasswordLoginReq);
 
     /**
      * 处理所有ws连接的事件
@@ -62,5 +70,4 @@ public interface WebSocketService {
     void sendToAllOnline(WSBaseResp<?> wsBaseResp);
 
     void sendToUid(WSBaseResp<?> wsBaseResp, Long uid);
-
 }

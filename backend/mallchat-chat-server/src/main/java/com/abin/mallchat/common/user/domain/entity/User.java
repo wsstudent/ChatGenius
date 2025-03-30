@@ -36,6 +36,19 @@ public class User implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
+     /**
+     * 用户名
+     */
+    @TableField("username")
+    private String username;
+
+    /**
+     * 密码
+     */
+    @TableField("password")
+    private String password;
+
+
     /**
      * 用户昵称
      */

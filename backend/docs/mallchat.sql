@@ -75,6 +75,8 @@ CREATE TABLE `message_mark`  (
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户id',
+  `username` varchar(50) DEFAULT NULL COMMENT '用户名',
+  `password` varchar(128) DEFAULT NULL COMMENT '密码',
   `name` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户昵称',
   `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户头像',
   `sex` int(11) DEFAULT NULL COMMENT '性别 1为男性，2为女性',

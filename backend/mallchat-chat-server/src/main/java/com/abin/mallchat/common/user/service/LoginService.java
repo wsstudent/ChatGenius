@@ -1,11 +1,19 @@
 package com.abin.mallchat.common.user.service;
 
+import com.abin.mallchat.common.user.domain.vo.request.user.PwdLoginReq;
+import com.abin.mallchat.common.user.domain.vo.response.user.UserInfoResp;
 /**
  * Description: 登录相关处理类
  * Author: <a href="https://github.com/zongzibinbin">abin</a>
  * Date: 2023-03-19
  */
 public interface LoginService {
+
+
+    /**
+     * 用户名密码登录
+     */
+    UserInfoResp loginByPassword(PwdLoginReq req);
 
 
     /**

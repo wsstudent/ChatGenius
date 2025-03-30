@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -86,4 +87,9 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
         }, User::getLastOptTime);
     }
 
+    public User getByUsername(String username) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, username);
+        return getOne(wrapper);
+    }
 }
