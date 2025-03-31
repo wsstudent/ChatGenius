@@ -64,16 +64,18 @@ public class TokenInterceptor implements HandlerInterceptor {
      * @param requestURI
      */
     private boolean isPublicURI(String requestURI) {
-    // 更精确的匹配方式，使用startsWith或正则表达式
-    if (requestURI.startsWith("/capi/user/login/")) {
-        return true;
-    }
+        // 输出日志，便于调试
+        log.debug("检查公开路径: {}", requestURI);
 
-    // 输出日志，便于调试
-    log.debug("检查公开路径: {}", requestURI);
+        // 更精确的匹配方式，使用startsWith或正则表达式
+        if (requestURI.startsWith("/capi/user/login/")) {
+            return true;
+        }
 
-    String[] split = requestURI.split("/");
-    return split.length > 3 && "public".equals(split[3]);
+
+
+        String[] split = requestURI.split("/");
+        return split.length > 3 && "public".equals(split[3]);
     }
 
     private String getToken(HttpServletRequest request) {
