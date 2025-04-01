@@ -7,6 +7,7 @@ import com.abin.mallchat.common.user.domain.enums.WSReqTypeEnum;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSAuthorize;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSBaseReq;
 import com.abin.mallchat.common.user.domain.vo.request.ws.WSPasswordLoginReq;
+import com.abin.mallchat.common.user.service.LoginService;
 import com.abin.mallchat.common.user.service.WebSocketService;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -102,7 +103,12 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 log.info("请求二维码 = " + msg.text());
                 break;
             case HEARTBEAT:
-                break;
+            // 处理心跳，更新token有效期
+            String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
+            if (StrUtil.isNotBlank(token)) {
+                SpringUtil.getBean(LoginService.class).renewalTokenIfNecessary(token);
+            }
+            break;
             case PASSWORD_LOGIN:
                 this.webSocketService.passwordLogin(ctx.channel(), JSONUtil.toBean(wsBaseReq.getData().toString(), WSPasswordLoginReq.class));
                 log.info("密码登录请求 = " + msg.text());

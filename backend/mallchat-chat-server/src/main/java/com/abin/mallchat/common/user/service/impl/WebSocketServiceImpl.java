@@ -181,17 +181,29 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
     }
 
-    @Override
-    public void authorize(Channel channel, WSAuthorize wsAuthorize) {
-        //校验token
-        boolean verifySuccess = loginService.verify(wsAuthorize.getToken());
-        if (verifySuccess) {//用户校验成功给用户登录
-            User user = userDao.getById(loginService.getValidUid(wsAuthorize.getToken()));
-            loginSuccess(channel, user, wsAuthorize.getToken());
-        } else { //让前端的token失效
-            sendMsg(channel, WSAdapter.buildInvalidateTokenResp());
-        }
-    }
+   // 在WebSocketServiceImpl的authorize方法中添加日志
+   @Override
+   public void authorize(Channel channel, WSAuthorize wsAuthorize) {
+       log.info("处理认证请求，token: {}", wsAuthorize.getToken());
+       //校验token
+       boolean verifySuccess = loginService.verify(wsAuthorize.getToken());
+       log.info("Token验证结果: {}", verifySuccess);
+
+       if (verifySuccess) {
+           //用户校验成功给用户登录
+           Long uid = loginService.getValidUid(wsAuthorize.getToken());
+           User user = userDao.getById(uid);
+           log.info("用户认证成功，用户ID: {}", uid);
+
+           // 续期token
+           loginService.renewalTokenIfNecessary(wsAuthorize.getToken());
+           NettyUtil.setAttr(channel, NettyUtil.TOKEN, wsAuthorize.getToken());
+           loginSuccess(channel, user, wsAuthorize.getToken());
+       } else { //让前端的token失效
+           log.warn("认证失败，无效token");
+           sendMsg(channel, WSAdapter.buildInvalidateTokenResp());
+       }
+   }
 
     /**
      * (channel必在本地)登录成功，并更新状态

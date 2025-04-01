@@ -90,17 +90,15 @@ public class LoginServiceImpl implements LoginService {
     @Async
     @Override
     public void renewalTokenIfNecessary(String token) {
-        Long uid = jwtUtils.getUidOrNull(token);
-        if (Objects.isNull(uid)) {
-            return;
-        }
-        String key = RedisKey.getKey(RedisKey.USER_TOKEN_STRING, uid);
-        long expireDays = RedisUtils.getExpire(key, TimeUnit.DAYS);
-        if (expireDays == -2) {//不存在的key
-            return;
-        }
-        if (expireDays < TOKEN_RENEWAL_DAYS) {//小于一天的token帮忙续期
-            RedisUtils.expire(key, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+        Long uid = getValidUid(token);
+        if (Objects.nonNull(uid)) {
+            String userTokenKey = RedisKey.getKey(RedisKey.USER_TOKEN_STRING, String.valueOf(uid));
+            Long expireDays = RedisUtils.getExpire(userTokenKey, TimeUnit.DAYS);
+            // 如果token有效期小于续期时间，则续期
+            if (expireDays < TOKEN_RENEWAL_DAYS) {
+                RedisUtils.expire(userTokenKey, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+                log.info("用户token续期成功，用户ID：{}", uid);
+            }
         }
     }
 

@@ -81,6 +81,15 @@ const onConnectClose = () => {
 // ws 连接成功
 const onConnectOpen = () => {
   postMsg({ type: 'open' })
+
+  // 如果有token，立即发送认证请求
+  if (token) {
+    connectionSend({
+      type: 3, // AUTHORIZE类型
+      data: { token }
+    })
+  }
+
   // 心跳❤️检测
   sendHeartPack()
 }

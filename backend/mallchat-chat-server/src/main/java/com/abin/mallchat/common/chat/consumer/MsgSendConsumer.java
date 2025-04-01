@@ -69,6 +69,7 @@ public class MsgSendConsumer implements RocketMQListener<MsgSendMessageDTO> {
     @Autowired
     private PushService pushService;
 
+
     @Override
     public void onMessage(MsgSendMessageDTO dto) {
         Message message = messageDao.getById(dto.getMsgId());
