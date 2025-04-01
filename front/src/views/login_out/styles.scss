@@ -1,0 +1,233 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+#body-bg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* 背景图 */
+#body-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1e3c72 0%, #5473a8 50%, #49be9e 100%);
+  animation: bg-zoom 1.5s ease-out forwards;
+}
+/* 背景图缩放动画 */
+@keyframes bg-zoom {
+  0% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.container {
+  position: relative;
+  width: 350px;
+  height: 340px;
+  border-radius: 15px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: 0.5s;
+  overflow: hidden;
+  animation: container-appear 0.8s ease-out forwards;
+}
+/* 容器淡入动画 */
+@keyframes container-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.container::before {
+  content: ' ';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: repeating-conic-gradient(from var(--a), #45f3ff 0%, #45f3ff 10%, transparent 10%, transparent 80%, transparent 100%);
+  border-radius: 20px;
+  animation: animate 3.5s linear infinite;
+}
+
+/* 动画变量 */
+@property --a {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes animate {
+  0% {
+    --a: 0deg;
+  }
+  100% {
+    --a: 360deg;
+  }
+}
+
+.container span {
+  position: absolute;
+  inset: 5px;
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+.container span::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  background-size: cover;
+  background: linear-gradient(135deg, #1e3c72 0%, #5473a8 50%, #49be9e 100%);
+  filter: blur(10px);
+}
+
+.container span::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  background-size: cover;
+  background: linear-gradient(135deg, #1e3c72 0%, #5473a8 50%, #49be9e 100%);
+  filter: blur(15px);
+}
+
+.loginForm {
+  position: absolute;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  gap: 15px;
+  transition: 0.5s;
+  padding: 20px;
+}
+
+.loginForm h2 {
+  position: relative;
+  color: #fff;
+  font-size: 1.5em;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.loginForm :deep(.el-form-item) {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.custom-input,
+.custom-select {
+  width: 100%;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.15);
+  padding: 10px 80px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.custom-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.custom-input:focus,
+.custom-select:focus {
+  border-color: #45f3ff;
+  box-shadow: 0 0 5px rgba(69, 243, 255, 0.3);
+}
+
+.custom-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-select {
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  cursor: pointer;
+}
+
+.custom-select option {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.inputBox {
+  width: 100%;
+  margin-top: 1px;
+}
+
+.el-button {
+  width: 100%;
+  height: 36px;
+  background: rgba(69, 243, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(69, 243, 255, 0.4);
+  border-radius: 4px;
+  font-size: 0.95em;
+  font-weight: 500;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  margin-top: 5px;
+}
+
+/* 按钮悬停效果 */
+.el-button:hover {
+  background: rgba(69, 243, 255, 0.4);
+  border-color: rgba(69, 243, 255, 0.6);
+}
+
+.el-button:focus {
+  outline: none;
+}
+
+/* GitHub 水印样式 - 底部居中显示 */
+.github-link {
+  position: fixed;
+  bottom: 2px;  /* 距离底部20px */
+  left: 50%;
+  transform: translateX(-50%);  /* 水平居中 */
+  z-index: 1000;
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.github-watermark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background-color: rgba(0, 0, 0, 0.3);  /* 降低背景不透明度 */
+  padding: 6px 10px;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  backdrop-filter: blur(2px);  /* 添加模糊效果增强可读性 */
+}
+

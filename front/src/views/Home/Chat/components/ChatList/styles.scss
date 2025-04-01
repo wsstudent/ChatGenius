@@ -15,33 +15,33 @@
 
   // 强制硬件加速
   transform: translate3d(0, 0, 0);
-  perspective: 1000;
+  perspective: 1000px;
 
   .loading {
-    position: absolute;
-    top: 50px;
-    z-index: 20;
-    gap: 4px;
-    width: 100%;
-    padding: 16px 0;
-    font-size: 14px;
-    color: var(--font-light-1);
-    background: linear-gradient(180deg, rgb(50, 54, 68) 0%, transparent 85%);
+  position: absolute;
+  top: 50px;
+  z-index: 20;
+  gap: 4px;
+  width: 100%;
+  padding: 16px 0;
+  font-size: 14px;
+  color: var(--font-light-1);
+  background: linear-gradient(180deg, rgb(50, 54, 68) 0%, transparent 85%);
 
-    svg {
-      @keyframes rotate {
-        from {
-          transform: rotate(0);
-        }
+  svg {
+    // 将动画属性放在 @keyframes 前面，或使用 & {} 包装
+    animation: rotate 2s linear infinite;
 
-        to {
-          transform: rotate(360deg);
-        }
+    @keyframes rotate {
+      from {
+        transform: rotate(0);
       }
-
-      animation: rotate 2s linear infinite;
+      to {
+        transform: rotate(360deg);
+      }
     }
   }
+}
 
   .empty {
     display: flex;

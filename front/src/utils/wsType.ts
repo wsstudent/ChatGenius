@@ -36,6 +36,8 @@ export enum WsRequestMsgType {
   HeartBeatDetection,
   /** 3用户认证 */
   Authorization,
+  /** 4密码登录 */
+  PASSWORD_LOGIN = 4,
 }
 
 export type WsReqMsgContentType = {

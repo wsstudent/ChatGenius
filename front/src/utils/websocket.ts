@@ -18,6 +18,7 @@ import { computedToken } from '@/services/request'
 import { worker } from './initWorker'
 import shakeTitle from '@/utils/shakeTitle'
 import notify from '@/utils/notification'
+import { ElMessage } from 'element-plus'
 
 class WS {
   #tasks: WsReqMsgContentType[] = []
@@ -137,38 +138,46 @@ class WS {
       }
       // 登录成功
       case WsResponseMessageType.LoginSuccess: {
-        userStore.isSign = true
-        const { token, ...rest } = params.data as LoginSuccessResType
-        // FIXME 可以不需要赋值了，单独请求了接口。
-        userStore.userInfo = { ...userStore.userInfo, ...rest }
-        localStorage.setItem('USER_INFO', JSON.stringify(rest))
-        localStorage.setItem('TOKEN', token)
-        // 更新一下请求里面的 token.
-        computedToken.clear()
-        computedToken.get()
-        loginStore.loginStatus = LoginStatus.Success
-        // 获取用户详情
-        userStore.getUserDetailAction()
-        // 关闭登录弹窗
-        loginStore.showLogin = false
-        // 清空登录二维码
-        loginStore.loginQrCode = undefined
-        // 自己更新自己上线
-        groupStore.batchUpdateUserStatus([
-          {
-            activeStatus: OnlineEnum.ONLINE,
-            avatar: rest.avatar,
-            lastOptTime: Date.now(),
-            name: rest.name,
-            uid: rest.uid,
-          },
-        ])
-        // 获取用户详情
-        chatStore.getSessionList(true)
-        // 自定义表情列表
-        emojiStore.getEmojiList()
-        break
+      // 添加调试信息
+      console.log('收到登录成功消息，数据:', JSON.stringify(params.data))
+
+      userStore.isSign = true
+      const { token, ...rest } = params.data as LoginSuccessResType
+
+      // 检查 token 是否存在
+      if (!token) {
+        console.error('登录成功但token为空')
+        ElMessage.error('登录成功但未获取到令牌，请重试')
+        return
       }
+
+      console.log('获取到 token:', token.substring(0, 10) + '...')
+
+      userStore.userInfo = { ...userStore.userInfo, ...rest }
+      localStorage.setItem('USER_INFO', JSON.stringify(rest))
+      localStorage.setItem('TOKEN', token)
+
+      // 验证token存储
+      const storedToken = localStorage.getItem('TOKEN')
+      console.log('存储后检查 token:', storedToken ? '存储成功' : '存储失败')
+
+      // 清除登录超时检测
+      if (window.loginTimeoutId) {
+        clearTimeout(window.loginTimeoutId)
+        window.loginTimeoutId = null
+      }
+
+      // 添加路由跳转延迟，确保状态更新
+      setTimeout(() => {
+        // 如果当前路径是登录页，跳转到首页
+        if (Router.currentRoute.value.path === '/login') {
+          Router.push('/')
+        }
+      }, 100)
+
+      break
+    }
+
       // 收到消息
       case WsResponseMessageType.ReceiveMessage: {
         chatStore.pushMsg(params.data as MessageType)
