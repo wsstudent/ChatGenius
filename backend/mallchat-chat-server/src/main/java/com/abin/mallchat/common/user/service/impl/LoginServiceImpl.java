@@ -90,15 +90,20 @@ public class LoginServiceImpl implements LoginService {
     @Async
     @Override
     public void renewalTokenIfNecessary(String token) {
-        Long uid = getValidUid(token);
-        if (Objects.nonNull(uid)) {
-            String userTokenKey = RedisKey.getKey(RedisKey.USER_TOKEN_STRING, String.valueOf(uid));
-            Long expireDays = RedisUtils.getExpire(userTokenKey, TimeUnit.DAYS);
-            // 如果token有效期小于续期时间，则续期
-            if (expireDays < TOKEN_RENEWAL_DAYS) {
-                RedisUtils.expire(userTokenKey, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
-                log.info("用户token续期成功，用户ID：{}", uid);
+        try {
+            Long uid = getValidUid(token);
+            if (Objects.nonNull(uid)) {
+                // 直接传递uid对象
+                String userTokenKey = RedisKey.getKey(RedisKey.USER_TOKEN_STRING, uid);
+                Long expireDays = RedisUtils.getExpire(userTokenKey, TimeUnit.DAYS);
+
+                if (expireDays < TOKEN_RENEWAL_DAYS) {
+                    RedisUtils.expire(userTokenKey, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+                    log.info("用户token续期成功，用户ID：{}", uid);
+                }
             }
+        } catch (Exception e) {
+            log.error("Token续期异常: {}", token, e);
         }
     }
 
@@ -111,6 +116,7 @@ public class LoginServiceImpl implements LoginService {
         }
         //获取用户token
         token = jwtUtils.createToken(uid);
+        //存储token到redis
         RedisUtils.set(key, token, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);//token过期用redis中心化控制，初期采用5天过期，剩1天自动续期的方案。后续可以用双token实���
         return token;
     }

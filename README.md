@@ -42,6 +42,7 @@ fileReservedTime=48
 brokerRole=ASYNC_MASTER
 flushDiskType=ASYNC_FLUSH
 namesrvAddr=rocketmq-namesrv:9876
+brokerIP1=127.0.0.1  # 添加此行，指定broker对外暴露的IP
 ```
 
 
@@ -63,14 +64,40 @@ docker run \
 # 启动 Broker
 docker run -d \
   --name rocketmq-broker \
+  --net rocketmq-net \
   -p 10911:10911 -p 10909:10909 -p 10912:10912 \
   -v ~/DockerData/rocketmq/broker/logs:/home/rocketmq/logs \
   -v ~/DockerData/rocketmq/broker/store:/home/rocketmq/store \
   -v ~/DockerData/rocketmq/broker/conf:/home/rocketmq/store/config \
-  -e "NAMESRV_ADDR=127.0.0.1:9876" \
+  -e "NAMESRV_ADDR=rocketmq-namesrv:9876" \
   apache/rocketmq:latest \
   sh mqbroker -c /home/rocketmq/store/config/broker.conf
 
 
+
 ```
+
+## RocketMQ主题创建
+
+部署RocketMQ后，需要手动创建项目所需的主题，否则应用启动时会报错：
+
+```bash
+# 进入broker容器
+docker exec -it rocketmq-broker bash
+
+# 创建必要的主题
+# 1. WebSocket推送主题
+sh /home/rocketmq/rocketmq-5.3.2/bin/mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t websocket_push
+
+# 2. 消息发送主题
+sh /home/rocketmq/rocketmq-5.3.2/bin/mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t chat_send_msg
+
+# 3. 用户扫码发送消息主题
+sh /home/rocketmq/rocketmq-5.3.2/bin/mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t user_scan_send_msg
+
+# 4. 用户登录发送消息主题
+sh /home/rocketmq/rocketmq-5.3.2/bin/mqadmin updateTopic -n rocketmq-namesrv:9876 -c DefaultCluster -t user_login_send_msg
+
+# 验证主题是否创建成功
+sh /home/rocketmq/rocketmq-5.3.2/bin/mqadmin topicList -n rocketmq-namesrv:9876
 

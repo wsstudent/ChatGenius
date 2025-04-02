@@ -45,6 +45,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -118,26 +119,48 @@ public class WebSocketServiceImpl implements WebSocketService {
 
    @Override
    public void passwordLogin(Channel channel, WSPasswordLoginReq wsPasswordLoginReq) {
+       String username = wsPasswordLoginReq.getUsername();
+       String clientIp = NettyUtil.getAttr(channel, NettyUtil.IP);
+
+       log.info("处理WebSocket密码登录请求");
+
        try {
            // 创建登录请求对象
            PwdLoginReq loginReq = new PwdLoginReq();
-           loginReq.setUsername(wsPasswordLoginReq.getUsername());
+           loginReq.setUsername(username);
            loginReq.setPassword(wsPasswordLoginReq.getPassword());
 
            try {
                // 调用登录服务验证用户名密码
                UserInfoResp userInfoResp = loginService.loginByPassword(loginReq);
-               // 获取用户信息
-               User user = userDao.getById(userInfoResp.getId());
+               // 直接使用loginService返回的用户信息，避免重复查询
+
                // 登录成功，更新状态
+               User user = new User();
+               user.setId(userInfoResp.getId());
+               user.setName(userInfoResp.getName());
+               user.setAvatar(userInfoResp.getAvatar());
+
                loginSuccess(channel, user, userInfoResp.getToken());
+               log.info("WebSocket密码登录成功，用户ID：{}", user.getId());
+
            } catch (BusinessException e) {
-               sendMsg(channel, WSBaseResp.build(1000, e.getMessage()));
+               log.warn("WebSocket密码登录失败：{}, IP: {}", e.getMessage(), clientIp);
+               sendMsg(channel, WSBaseResp.build(1000, "用户名或密码错误"));
            }
        } catch (Exception e) {
-           log.error("密码登录异常", e);
-           sendMsg(channel, WSBaseResp.build(1000, "系统异常，请稍后再试"));
+           String errorId = generateErrorId();
+           log.error("WebSocket密码登录异常，错误ID：{}, IP: {}", errorId, clientIp, e);
+           sendMsg(channel, WSBaseResp.build(1000, "系统异常，请稍后再试 (ErrorID: " + errorId + ")"));
        }
+   }
+
+   /**
+    * 生成错误ID用于日志跟踪
+    */
+   private String generateErrorId() {
+       return Long.toHexString(System.currentTimeMillis()) +
+              Integer.toHexString(ThreadLocalRandom.current().nextInt(0xFFFF));
    }
 
     /**
