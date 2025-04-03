@@ -25,6 +25,28 @@ public class RoleServiceImpl implements IRoleService {
         return isAdmin(roleSet) || roleSet.contains(roleEnum.getId());
     }
 
+    @Override
+    public RoleEnum getHighestRole(Long uid) {
+        // 获取用户的角色ID
+        Set<Long> roleSet = userCache.getRoleSet(uid);
+        if (roleSet == null || roleSet.isEmpty()) {
+            return null;
+        }
+
+        // 优先判断是否有超级管理员角色
+        if (roleSet.contains(RoleEnum.ADMIN.getId())) {
+            return RoleEnum.ADMIN; // 返回超级管理员角色
+        }
+
+        // 其次判断是否有群聊管理员角色
+        if (roleSet.contains(RoleEnum.CHAT_MANAGER.getId())) {
+            return RoleEnum.CHAT_MANAGER; // 返回群聊管理员角色
+        }
+
+        // 如果没有特殊权限，返回null
+        return null;
+    }
+
     private boolean isAdmin(Set<Long> roleSet) {
         return Objects.requireNonNull(roleSet).contains(RoleEnum.ADMIN.getId());
     }

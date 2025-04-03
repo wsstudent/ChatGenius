@@ -8,9 +8,9 @@ import com.abin.mallchat.common.chat.domain.vo.response.ChatMessageResp;
 import com.abin.mallchat.common.chat.service.ChatService;
 import com.abin.mallchat.common.user.domain.entity.User;
 import com.abin.mallchat.common.user.domain.enums.ChatActiveStatusEnum;
+import com.abin.mallchat.common.user.domain.enums.RoleEnum;
 import com.abin.mallchat.common.user.domain.enums.WSBaseResp;
 import com.abin.mallchat.common.user.domain.enums.WSRespTypeEnum;
-import com.abin.mallchat.common.user.domain.vo.response.user.UserInfoResp;
 import com.abin.mallchat.common.user.domain.vo.response.ws.*;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.springframework.beans.BeanUtils;
@@ -36,17 +36,35 @@ public class WSAdapter {
         return wsBaseResp;
     }
 
-    public static WSBaseResp<WSLoginSuccess> buildLoginSuccessResp(User user, String token, boolean hasPower) {
+    /**
+     * 构建登录成功消息
+     * @param user 用户信息
+     * @param token 用户token
+     * @param role 用户角色类型
+     * @return 登录成功的响应
+     */
+    public static WSBaseResp<?> buildLoginSuccessResp(User user, String token, RoleEnum role) {
         WSBaseResp<WSLoginSuccess> wsBaseResp = new WSBaseResp<>();
         wsBaseResp.setType(WSRespTypeEnum.LOGIN_SUCCESS.getType());
-        WSLoginSuccess wsLoginSuccess = WSLoginSuccess.builder()
-                .avatar(user.getAvatar())
-                .name(user.getName())
-                .token(token)
-                .uid(user.getId())
-                .power(hasPower ? 1 : 0)
-                .build();
-        wsBaseResp.setData(wsLoginSuccess);
+
+        WSLoginSuccess loginSuccess = new WSLoginSuccess();
+        loginSuccess.setUid(user.getId());
+        loginSuccess.setToken(token);
+        loginSuccess.setAvatar(user.getAvatar());
+        loginSuccess.setName(user.getName());
+
+        // 根据角色类型设置权限级别
+        if (role == null) {
+            loginSuccess.setPower(0); // 普通用户
+        } else if (RoleEnum.ADMIN.equals(role)) {
+            loginSuccess.setPower(2); // 超级管理员
+        } else if (RoleEnum.CHAT_MANAGER.equals(role)) {
+            loginSuccess.setPower(1); // 群聊管理员
+        } else {
+            loginSuccess.setPower(0); // 默认普通用户
+        }
+
+        wsBaseResp.setData(loginSuccess);
         return wsBaseResp;
     }
 

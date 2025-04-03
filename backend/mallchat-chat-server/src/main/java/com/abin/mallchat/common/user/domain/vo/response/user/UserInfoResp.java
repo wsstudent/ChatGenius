@@ -7,10 +7,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Description: 用户信息返回
- * Author: <a href="https://github.com/zongzibinbin">abin</a>
- * Date: 2023-03-22
+ *
  */
 @Data
 @Builder
@@ -37,5 +38,7 @@ public class UserInfoResp {
     @ApiModelProperty("token")
     private String token;
 
+    @ApiModelProperty("用户角色列表")
+    private List<String> roles;
 }
 

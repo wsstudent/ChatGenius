@@ -102,17 +102,20 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 this.webSocketService.handleLoginReq(ctx.channel());
                 log.info("请求二维码 = " + msg.text());
                 break;
+
+            // 心跳包
             case HEARTBEAT:
-            // 处理心跳，更新token有效期
-            String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
+            String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN); // 获取token
             if (StrUtil.isNotBlank(token)) {
-                SpringUtil.getBean(LoginService.class).renewalTokenIfNecessary(token);
+                SpringUtil.getBean(LoginService.class).renewalTokenIfNecessary(token);  // 更新token有效期
             }
             break;
+
             case PASSWORD_LOGIN:
                 this.webSocketService.passwordLogin(ctx.channel(), JSONUtil.toBean(wsBaseReq.getData().toString(), WSPasswordLoginReq.class));
                 log.info("密码登录请求 = " + msg.text());
                 break;
+
             case AUTHORIZE:
                 this.webSocketService.authorize(ctx.channel(), JSONUtil.toBean(wsBaseReq.getData().toString(), WSAuthorize.class));
                 break;

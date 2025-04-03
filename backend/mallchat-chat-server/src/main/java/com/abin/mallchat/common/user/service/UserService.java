@@ -67,5 +67,11 @@ public interface UserService {
      */
     List<SummeryInfoDTO> getSummeryUserInfo(SummeryInfoReq req);
 
+    /**
+     * 获取徽章信息
+     *
+     * @param req
+     * @return
+     */
     List<ItemInfoDTO> getItemInfo(ItemInfoReq req);
 }

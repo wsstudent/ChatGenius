@@ -117,6 +117,12 @@ public class WebSocketServiceImpl implements WebSocketService {
         sendMsg(channel, WSAdapter.buildLoginResp(wxMpQrCodeTicket));
     }
 
+    /**
+     * 处理用户扫码登录请求
+     *
+     * @param channel
+     * @param wsPasswordLoginReq
+     */
    @Override
    public void passwordLogin(Channel channel, WSPasswordLoginReq wsPasswordLoginReq) {
        String username = wsPasswordLoginReq.getUsername();
@@ -229,15 +235,18 @@ public class WebSocketServiceImpl implements WebSocketService {
    }
 
     /**
-     * (channel必在本地)登录成功，并更新状态
+     * 密码登录成功，并更新状态
      */
     private void loginSuccess(Channel channel, User user, String token) {
         //更新上线列表
         online(channel, user.getId());
-        //返回给用户登录成功
-        boolean hasPower = iRoleService.hasPower(user.getId(), RoleEnum.CHAT_MANAGER);
-        //发送给对应的用户
-        sendMsg(channel, WSAdapter.buildLoginSuccessResp(user, token, hasPower));
+
+        //获取用户最高权限角色
+        RoleEnum roleEnum = iRoleService.getHighestRole(user.getId());
+
+        //返回给用户登录成功消息
+        sendMsg(channel, WSAdapter.buildLoginSuccessResp(user, token, roleEnum));
+
         //发送用户上线事件
         boolean online = userCache.isOnline(user.getId());
         if (!online) {
@@ -245,6 +254,8 @@ public class WebSocketServiceImpl implements WebSocketService {
             user.refreshIp(NettyUtil.getAttr(channel, NettyUtil.IP));
             applicationEventPublisher.publishEvent(new UserOnlineEvent(this, user));
         }
+
+        log.info("登录成功，用户ID：{}，角色：{}，已发送登录成功消息", user.getId(), roleEnum);
     }
 
     /**
@@ -273,6 +284,13 @@ public class WebSocketServiceImpl implements WebSocketService {
         return true;
     }
 
+    /**
+     * 扫码登录成功
+     *
+     * @param loginCode
+     * @param uid
+     * @return
+     */
     @Override
     public Boolean scanLoginSuccess(Integer loginCode, Long uid) {
         //确认连接在该机器

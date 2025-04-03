@@ -40,6 +40,12 @@ public class LoginServiceImpl implements LoginService {
     //token续期时间
     private static final Integer TOKEN_RENEWAL_DAYS = 2;
 
+    /**
+     * 用户密码登录
+     *
+     * @param req
+     * @return
+     */
     @Override
     public UserInfoResp loginByPassword(PwdLoginReq req) {
         log.info("用户密码登录，用户名：{}", req.getUsername());
@@ -87,6 +93,11 @@ public class LoginServiceImpl implements LoginService {
         return Objects.equals(token, realToken);//有可能token失效了，需要校验是不是和最新token一致
     }
 
+    /**
+     * 续期token
+     *
+     * @param token
+     */
     @Async
     @Override
     public void renewalTokenIfNecessary(String token) {
@@ -107,6 +118,12 @@ public class LoginServiceImpl implements LoginService {
         }
     }
 
+    /**
+     * 用户登录，获取token
+     *
+     * @param uid
+     * @return
+     */
     @Override
     public String login(Long uid) {
         String key = RedisKey.getKey(RedisKey.USER_TOKEN_STRING, uid);
@@ -117,17 +134,19 @@ public class LoginServiceImpl implements LoginService {
         //获取用户token
         token = jwtUtils.createToken(uid);
         //存储token到redis
-        RedisUtils.set(key, token, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);//token过期用redis中心化控制，初期采用5天过期，剩1天自动续期的方案。后续可以用双token实���
+        RedisUtils.set(key, token, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);//token过期用redis中心化控制，初期采用5天过期，剩1天自动续期的方案。后续可以用双token实现
         return token;
     }
 
+    /**
+     * 用户登出
+     *
+     * @param token
+     */
     @Override
     public Long getValidUid(String token) {
         boolean verify = verify(token);
         return verify ? jwtUtils.getUidOrNull(token) : null;
     }
 
-    public static void main(String[] args) {
-        System.out.println();
-    }
 }

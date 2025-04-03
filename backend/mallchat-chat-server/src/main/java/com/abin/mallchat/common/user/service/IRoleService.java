@@ -13,10 +13,17 @@ import com.abin.mallchat.common.user.domain.enums.RoleEnum;
 public interface IRoleService {
 
     /**
-     * 是否有某个权限，临时做法
+     * 是否有某个权限
      *
      * @return
      */
     boolean hasPower(Long uid, RoleEnum roleEnum);
 
+    /**
+     * 获取用户最高级别权限角色
+     *
+     * @param uid 用户ID
+     * @return 角色枚举，如果没有特殊权限返回null
+     */
+    RoleEnum getHighestRole(Long uid);
 }

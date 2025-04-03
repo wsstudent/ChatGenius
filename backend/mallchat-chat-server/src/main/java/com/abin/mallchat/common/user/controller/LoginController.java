@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/capi/user")
+//@RequestMapping("/capi/user")
 @Api(tags = "用户登录接口")
 public class LoginController {
 
@@ -26,7 +26,7 @@ public class LoginController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/login/password")
+    //@PostMapping("/login/password")
     @ApiOperation("密码登录")
     public ApiResult<UserInfoResp> passwordLogin(@RequestBody @Valid PwdLoginReq req) {
         UserInfoResp userInfo = loginService.loginByPassword(req);

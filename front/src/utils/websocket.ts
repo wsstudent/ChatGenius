@@ -125,58 +125,63 @@ class WS {
     const globalStore = useGlobalStore()
     const emojiStore = useEmojiStore()
     switch (params.type) {
+
       // 获取登录二维码
       case WsResponseMessageType.LoginQrCode: {
         const data = params.data as LoginInitResType
         loginStore.loginQrCode = data.loginUrl
         break
       }
+
       // 等待授权
       case WsResponseMessageType.WaitingAuthorize: {
         loginStore.loginStatus = LoginStatus.Waiting
         break
       }
+
       // 登录成功
       case WsResponseMessageType.LoginSuccess: {
-      // 添加调试信息
-      console.log('收到登录成功消息，数据:', JSON.stringify(params.data))
+        console.log('收到登录成功消息:', JSON.stringify(params.data))
 
-      userStore.isSign = true
-      const { token, ...rest } = params.data as LoginSuccessResType
+        // 设置登录状态
+        loginStore.loginStatus = LoginStatus.Success
+        userStore.isSign = true
 
-      // 检查 token 是否存在
-      if (!token) {
-        console.error('登录成功但token为空')
-        ElMessage.error('登录成功但未获取到令牌，请重试')
-        return
-      }
+        // 提取数据并处理
+        const data = params.data as LoginSuccessResType
 
-      console.log('获取到 token:', token.substring(0, 10) + '...')
-
-      userStore.userInfo = { ...userStore.userInfo, ...rest }
-      localStorage.setItem('USER_INFO', JSON.stringify(rest))
-      localStorage.setItem('TOKEN', token)
-
-      // 验证token存储
-      const storedToken = localStorage.getItem('TOKEN')
-      console.log('存储后检查 token:', storedToken ? '存储成功' : '存储失败')
-
-      // 清除登录超时检测
-      if (window.loginTimeoutId) {
-        clearTimeout(window.loginTimeoutId)
-        window.loginTimeoutId = null
-      }
-
-      // 添加路由跳转延迟，确保状态更新
-      setTimeout(() => {
-        // 如果当前路径是登录页，跳转到首页
-        if (Router.currentRoute.value.path === '/login') {
-          Router.push('/')
+        // 确保token存在
+        if (!data.token) {
+          console.error('登录成功但token为空')
+          ElMessage.error('登录成功但未获取到令牌，请重试')
+          return
         }
-      }, 100)
 
-      break
-    }
+        // 保存用户信息和token
+        const { token, ...userInfo } = data
+        userStore.userInfo = { ...userStore.userInfo, ...userInfo }
+        localStorage.setItem('USER_INFO', JSON.stringify(userInfo))
+        localStorage.setItem('TOKEN', token)
+
+        // 清除登录超时检测
+        if (window.loginTimeoutId) {
+          clearTimeout(window.loginTimeoutId)
+          window.loginTimeoutId = null
+        }
+
+        // 显示登录成功提示
+        ElMessage.success('登录成功')
+
+        // 路由跳转
+        setTimeout(() => {
+          // 如果当前在登录页，跳转到首页
+          if (Router.currentRoute.value.path === '/login') {
+            Router.push('/')
+          }
+        }, 100)
+
+        break
+      }
 
       // 收到消息
       case WsResponseMessageType.ReceiveMessage: {
