@@ -5,6 +5,7 @@ import { useGroupStore } from '@/stores/group'
 import { useGlobalStore } from '@/stores/global'
 import qrcode from '@/assets/qrcode.jpeg'
 import { judgeClient } from '@/utils/detectDevice'
+import { Tools } from '@element-plus/icons-vue'
 
 const client = judgeClient()
 const visible = ref(false)
@@ -18,6 +19,8 @@ const showSettingBox = () => (visible.value = true)
 const toggleGroupListShow = () => (groupStore.showGroupList = !groupStore.showGroupList)
 // 是否PC端
 const isPc = computed(() => client === 'PC')
+// 是否超级管理员
+const isAdmin = computed(() => userStore.userInfo.power === 2)
 
 const menuList = [
   // {
@@ -86,6 +89,11 @@ const menuList = [
         >
           <Icon class="tool-icon" icon="group" :size="28" />
         </el-badge>
+      </router-link>
+
+      <!-- 管理员入口 -->
+      <router-link v-if="isAdmin" exactActiveClass="tool-icon-active" to="/admin/users">
+        <el-icon class="tool-icon"><Tools /></el-icon>
       </router-link>
     </div>
     <div class="menu">
