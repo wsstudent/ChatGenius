@@ -141,7 +141,7 @@ class WS {
 
       // 登录成功
       case WsResponseMessageType.LoginSuccess: {
-        console.log('收到登录成功消息:', JSON.stringify(params.data))
+        // console.log('收到登录成功消息:', JSON.stringify(params.data))
 
         // 设置登录状态
         loginStore.loginStatus = LoginStatus.Success
@@ -182,6 +182,19 @@ class WS {
 
         break
       }
+
+      // 登录失败（添加这个新的消息类型处理）
+      case WsResponseMessageType.LoginError: {
+        const data = params.data as { msg: string }
+        console.log('登录失败:', data.msg)
+        // 显示错误消息
+        ElMessage.error(data.msg || '登录失败，请检查用户名和密码')
+
+        break
+      }
+
+      // 也需要添加相应的枚举值
+      // WsResponseMessageType.LoginError = 1000
 
       // 收到消息
       case WsResponseMessageType.ReceiveMessage: {

@@ -24,6 +24,8 @@ export enum WsResponseMessageType {
   RequestNewFriend,
   /** 新好友会话 */
   NewFriendSession,
+  /** 10.登录失败 */
+  LoginError = 1000,
 }
 
 /**
