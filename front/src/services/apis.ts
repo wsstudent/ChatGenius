@@ -130,4 +130,24 @@ export default {
     deleteRequest<Boolean>(urls.exitGroup, {
       roomId,
     }),
+
+  /** 获取用户列表（管理员） */
+  getUserList() {
+    return getRequest<UserInfoType[]>(urls.adminUserList)
+  },
+
+  /** 添加用户（管理员） */
+  addUser(data: any) {
+    return postRequest<void>(urls.adminAddUser, data)
+  },
+
+  /** 更新用户（管理员） */
+  updateUser(data: any) {
+    return postRequest<void>(urls.adminUpdateUser, data)
+  },
+
+  /** 删除用户（管理员） */
+  deleteUser(data: {id: number}) {
+    return postRequest<void>(urls.adminDeleteUser, data)
+  }
 }

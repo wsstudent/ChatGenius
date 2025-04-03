@@ -92,4 +92,10 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
         wrapper.eq(User::getUsername, username);
         return getOne(wrapper);
     }
+
+    public List<User> listUsers() {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(User::getId);
+        return list(queryWrapper);
+    }
 }

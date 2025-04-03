@@ -39,4 +39,10 @@ export default {
   groupDetail: `${prefix}/capi/room/public/group`, // 群组详情
   sessionDetail: `${prefix}/capi/chat/public/contact/detail`, // 会话详情
   sessionDetailWithFriends: `${prefix}/capi/chat/public/contact/detail/friend`, // 会话详情(联系人列表发消息用)
+
+  // -------------- 用户管理相关(超级管理员) ---------------
+  adminUserList: `${prefix}/capi/user/admin/list`, // 获取用户列表（管理员）
+  adminAddUser: `${prefix}/capi/user/admin/add`, // 添加用户（管理员）
+  adminUpdateUser: `${prefix}/capi/user/admin/update`, // 更新用户（管理员）
+  adminDeleteUser: `${prefix}/capi/user/admin/delete`, // 删除用户（管理员）
 }
