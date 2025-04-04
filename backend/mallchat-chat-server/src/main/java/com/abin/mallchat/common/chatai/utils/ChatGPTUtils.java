@@ -86,22 +86,44 @@ public class ChatGPTUtils {
 
 
     public static String parseText(String body) {
-//        log.info("body >>> " + body);
+        log.info("开始解析API响应: {}", body);
         try {
             return Arrays.stream(body.split("data:"))
-                    .map(String::trim)
-                    .filter(x -> StringUtils.isNotBlank(x) && !"[DONE]".endsWith(x))
-                    .map(x -> Optional.ofNullable(
-                            JsonUtils.toJsonNode(x)
-                                    .withArray("choices")
-                                    .get(0)
-                                    .with("delta")
-                                    .findValue("content"))
-                            .map(JsonNode::asText)
-                            .orElse(null)
-                    ).filter(Objects::nonNull).collect(Collectors.joining());
+                .map(String::trim)
+                .filter(x -> StringUtils.isNotBlank(x) && !"[DONE]".equals(x))
+                .map(x -> {
+                    log.debug("解析响应片段: {}", x);
+                    try {
+                        JsonNode node = JsonUtils.toJsonNode(x);
+                        if (node == null) {
+                            log.warn("解析为null的JSON片段: {}", x);
+                            return null;
+                        }
+
+                        JsonNode choices = node.get("choices");
+                        if (choices == null || choices.size() == 0) {
+                            log.warn("choices为空或不存在: {}", node);
+                            return null;
+                        }
+
+                        JsonNode delta = choices.get(0).get("delta");
+                        if (delta == null) {
+                            log.warn("delta为空或不存在: {}", choices.get(0));
+                            return null;
+                        }
+
+                        JsonNode content = delta.get("content");
+                        return content == null ? null : content.asText();
+                    } catch (Exception e) {
+                        log.warn("解析片段出错: {}, 异常: {}", x, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining());
         } catch (Exception e) {
-            log.error("parseText error e:", e);
+            log.error("parseText完整异常: ", e);
+            log.error("原始响应内容: {}", body);
             return "闹脾气了，等会再试试吧~";
         }
     }
@@ -152,33 +174,52 @@ public class ChatGPTUtils {
     }
 
     public Response send() throws IOException {
-        OkHttpClient okHttpClient = new OkHttpClient()
-                .newBuilder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .build();
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("model", model);
-        paramMap.put("messages", messages);
-        paramMap.put("max_tokens", maxTokens);
-        paramMap.put("temperature", temperature);
-        paramMap.put("top_p", topP);
-        paramMap.put("frequency_penalty", frequencyPenalty);
-        paramMap.put("presence_penalty", presencePenalty);
-        paramMap.put("stream", true);
+    // 添加请求日志
+    log.info("开始请求ChatGPT API, URL={}, 代理URL={}", URL, proxyUrl);
 
-        log.info("paramMap >>> " + JsonUtils.toStr(paramMap));
-        Request request = new Request.Builder()
-                .url(StringUtils.isNotBlank(proxyUrl) ? proxyUrl : URL)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", headers.get("Authorization"))
-                .post(RequestBody.create(MediaType.parse("application/json"), JsonUtils.toStr(paramMap)))
-                .build();
-        return okHttpClient.newCall(request).execute();
+    OkHttpClient okHttpClient = new OkHttpClient.Builder()
+        .connectTimeout(timeout, TimeUnit.MILLISECONDS)
+        .readTimeout(timeout, TimeUnit.MILLISECONDS)
+        .writeTimeout(timeout, TimeUnit.MILLISECONDS)
+        .build();
 
+    Map<String, Object> paramMap = new HashMap<>();
+    paramMap.put("model", model);
+    paramMap.put("messages", messages);
+    paramMap.put("max_tokens", maxTokens);
+    paramMap.put("temperature", temperature);
+    paramMap.put("top_p", topP);
+    paramMap.put("frequency_penalty", frequencyPenalty);
+    paramMap.put("presence_penalty", presencePenalty);
+    paramMap.put("stream", true);
 
+    String requestBody = JsonUtils.toStr(paramMap);
+    log.info("ChatGPT 请求参数: {}", requestBody);
+
+    String requestUrl = StringUtils.isNotBlank(proxyUrl) ? proxyUrl : URL;
+
+    Request request = new Request.Builder()
+        .url(requestUrl)
+        .headers(Headers.of(headers))
+        .post(RequestBody.create(MediaType.parse("application/json"), requestBody))
+        .build();
+
+    try {
+        Response response = okHttpClient.newCall(request).execute();
+        log.info("ChatGPT API响应状态码: {}", response.code());
+
+        if (!response.isSuccessful()) {
+            String errorBody = response.body().string();
+            log.error("ChatGPT API请求失败: {}", errorBody);
+            return response;
+        }
+
+        return response;
+    } catch (Exception e) {
+        log.error("ChatGPT API请求异常", e);
+        throw e;
     }
+}
 
     public static Integer countTokens(String messages) {
         return encoding.countTokens(messages);
