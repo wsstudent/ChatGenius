@@ -8,6 +8,7 @@ export default {
   getMsgList: `${prefix}/capi/chat/public/msg/page`,
   sendMsg: `${prefix}/capi/chat/msg`,
   getUserInfoDetail: `${prefix}/capi/user/userInfo`, // 获取用户信息详情
+  modifyUserAvatar: `${prefix}/capi/user/avatar`, // 修改用户头像
   modifyUserName: `${prefix}/capi/user/name`, // 修改用户名
   getBadgeList: `${prefix}/capi/user/badges`, // 徽章列表
   setUserBadge: `${prefix}/capi/user/badge`, // 设置用户徽章

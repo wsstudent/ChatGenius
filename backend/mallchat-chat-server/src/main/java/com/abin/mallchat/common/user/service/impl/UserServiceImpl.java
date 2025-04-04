@@ -73,26 +73,42 @@ public class UserServiceImpl implements UserService {
         return UserAdapter.buildUserInfoResp(userInfo, countByValidItemId);
     }
 
+    /**
+     * 修改用户头像
+     *
+     * @param uid
+     * @param req
+     */
     @Override
-    @Transactional
-    public void modifyName(Long uid, ModifyNameReq req) {
-        //判断名字是不是重复
-        String newName = req.getName();
-        AssertUtil.isFalse(sensitiveWordBs.hasSensitiveWord(newName), "名字中包含敏感词，请重新输入"); // 判断名字中有没有敏感词
-        User oldUser = userDao.getByName(newName);
-        AssertUtil.isEmpty(oldUser, "名字已经被抢占了，请换一个哦~~");
-        //判断改名卡够不够
-        UserBackpack firstValidItem = userBackpackDao.getFirstValidItem(uid, ItemEnum.MODIFY_NAME_CARD.getId());
-        AssertUtil.isNotEmpty(firstValidItem, "改名次数不够了，等后续活动送改名卡哦");
-        //使用改名卡
-        boolean useSuccess = userBackpackDao.invalidItem(firstValidItem.getId());
-        if (useSuccess) {//用乐观锁，就不用分布式锁了
-            //改名
-            userDao.modifyName(uid, req.getName());
-            //删除缓存
-            userCache.userInfoChange(uid);
-        }
+    public void modifyAvatar(Long uid, ModifyAvatarReq req) {
+        // 修改头像
+        User update = new User();
+        update.setId(uid);
+        update.setAvatar(req.getAvatar());
+        userDao.updateById(update);
+        // 删除缓存
+        userCache.userInfoChange(uid);
     }
+
+   @Override
+   @Transactional
+   public void modifyName(Long uid, ModifyNameReq req) {
+       //判断名字是不是重复
+       String newName = req.getName();
+       AssertUtil.isFalse(sensitiveWordBs.hasSensitiveWord(newName), "名字中包含敏感词，请重新输入"); // 判断名字中有没有敏感词
+       User oldUser = userDao.getByName(newName);
+       AssertUtil.isEmpty(oldUser, "名字已经被抢占了，请换一个哦~~");
+
+       // 删除改名卡检查代码
+       // UserBackpack firstValidItem = userBackpackDao.getFirstValidItem(uid, ItemEnum.MODIFY_NAME_CARD.getId());
+       // AssertUtil.isNotEmpty(firstValidItem, "改名次数不够了，等后续活动送改名卡哦");
+       // boolean useSuccess = userBackpackDao.invalidItem(firstValidItem.getId());
+
+       // 直接改名
+       userDao.modifyName(uid, req.getName());
+       // 删除缓存
+       userCache.userInfoChange(uid);
+   }
 
     @Override
     public List<BadgeResp> badges(Long uid) {

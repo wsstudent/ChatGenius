@@ -33,6 +33,14 @@ public class UserDao extends ServiceImpl<UserMapper, User> {
         return getOne(wrapper);
     }
 
+    //根据用户ID更新用户头像
+    public void modifyAvatar(Long uid, String avatar) {
+        User update = new User();
+        update.setId(uid);
+        update.setAvatar(avatar);
+        updateById(update);
+    }
+
     public void modifyName(Long uid, String name) {
         User update = new User();
         update.setId(uid);

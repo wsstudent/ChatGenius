@@ -55,6 +55,13 @@ public class UserController {
         return ApiResult.success(userService.getItemInfo(req));
     }
 
+    @PutMapping("/avatar")
+    @ApiOperation("修改用户头像")
+    public ApiResult<Void> modifyAvatar(@Valid @RequestBody ModifyAvatarReq req) {
+        userService.modifyAvatar(RequestHolder.get().getUid(), req);
+        return ApiResult.success();
+    }
+
     @PutMapping("/name")
     @ApiOperation("修改用户名")
     public ApiResult<Void> modifyName(@Valid @RequestBody ModifyNameReq req) {

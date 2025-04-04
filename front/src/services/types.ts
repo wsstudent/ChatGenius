@@ -134,8 +134,6 @@ export type UserInfoType = {
   avatar: string
   /** 用户名 */
   name: string
-  /** 剩余改名次数 */
-  modifyNameChance: number
   /** 性别 1为男性，2为女性 */
   sex: SexEnum
   /** 徽章，本地字段，有值用本地，无值用远端 */
@@ -145,6 +143,8 @@ export type UserInfoType = {
 }
 
 export type BadgeType = {
+  // 徽章名称
+  name: string
   // 徽章描述
   describe: string
   // 徽章id

@@ -1,149 +1,115 @@
-:global(.setting-box-modal) {
-  border-radius: 8px !important;
-}
-
-:global(.setting-box-modal .el-dialog__header) {
-  padding: 0;
-}
-
-:global(.setting-box-modal .el-dialog__headerbtn) {
-  z-index: 5;
-}
-
-.setting-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.setting-avatar-box {
+  position: relative;
+  width: 80px;    /* 改小头像尺寸 */
+  height: 80px;
+  margin: 0 auto 15px;  /* 使头像居中 */
 }
 
 .setting-avatar {
-  --el-avatar-size: 100px;
+  --el-avatar-size: 80px !important;  /* 控制头像组件大小 */
 }
 
-.setting-avatar-box {
-  position: relative;
-  width: 100px;
-  height: 100px;
+.avatar-upload-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 5;  /* 确保在性别图标之上 */
 }
 
-.setting-badge {
-  width: 20px;
-  height: 20px;
+.avatar-upload-mask:hover {
+  opacity: 1;
+}
+
+.avatar-upload-mask span {
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .setting-avatar-sex {
   position: absolute;
-  bottom: 8px;
-  left: 8px;
-  z-index: 10;
+  bottom: 0;
+  right: 0;
+  z-index: 4;  /* 确保在头像之上，但在上传遮罩之下 */
   padding: 2px;
-  background-color: var(--avatar-sex-bg-color);
   border: 1px solid var(--color-white);
   border-radius: 50%;
-
-  --avatar-sex-bg-man: var(--color-primary);
-  --avatar-sex-bg-female: pink;
 }
 
-.user-name {
-  display: flex;
-  column-gap: 8px;
-  align-items: center;
-}
-
-.setting-tips {
-  width: fit-content;
-}
-
-.setting-name {
-  display: flex;
-  column-gap: 8px;
-  align-items: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
-  font-size: 16px;
-}
-
-.pointer {
-  cursor: pointer;
-}
-
-.not-allow {
-  cursor: not-allowed;
-}
-
+/* 徽章列表样式优化 */
 .badge-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
   padding: 0;
-  margin: 0;
-  margin-top: 20px;
-  list-style-type: none;
-}
-
-.badge-item-mask {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  background-color: var(--hover-bg-2);
-  border-radius: 50%;
-  opacity: 0;
+  list-style: none;
 }
 
 .badge-item {
-  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--bg-second);
+  border-radius: 8px;
+}
+
+.badge-info {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 30%;
-  background-color: var(--hover-bg-2);
+  gap: 10px;
+}
+
+.badge-img {
+  width: 36px;  /* 进一步减小徽章图片大小 */
+  height: 36px;
   border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
 
-  &:hover {
-    .badge-item-mask {
-      pointer-events: initial;
-      opacity: 1;
-    }
+.badge-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 优化设置名称部分 */
+.setting-name {
+  width: 100%;
+  margin: 16px 0;
+
+  .name-edit-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .name-edit-input-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    max-width: 280px;
+    margin: 0 auto;
   }
 }
 
-.badge-item-icon {
-  width: 80%;
-  min-width: 80%;
-  margin-top: 10%;
-  margin-bottom: 10%;
-  filter: grayscale(1);
-
-  &-has {
-    filter: grayscale(0);
-  }
-}
-
-.badge-item-info {
-  margin-left: 4px;
-}
-
-.name-edit-wrapper {
-  display: flex;
-  align-items: center;
-}
-
-.name-edit-icon {
-  margin-left: 8px;
-}
-
-@media only screen and (min-width: 640px) {
-  .badge-list {
-    gap: 16px;
-  }
-
-  .badge-item {
-    width: 100px;
-    height: 100px;
-  }
+.setting-tips {
+  width: 100%;
+  margin: 12px 0;
 }

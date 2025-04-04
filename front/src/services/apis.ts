@@ -53,6 +53,8 @@ export default {
   getBadgeList: () => getRequest<BadgeType[]>(urls.getBadgeList, {}),
   /** 设置用户勋章 */
   setUserBadge: (badgeId: number) => putRequest<void>(urls.setUserBadge, { badgeId }),
+  /** 修改用户头像 */
+  modifyUserAvatar: (avatar: string) => putRequest<void>(urls.modifyUserAvatar, { avatar }),
   /** 修改用户名 */
   modifyUserName: (name: string) => putRequest<void>(urls.modifyUserName, { name }),
   /** 撤回消息 */

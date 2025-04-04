@@ -1,8 +1,128 @@
+<template>
+  <ElDialog
+    class="setting-box-modal"
+    v-model="value"
+    :width="client === 'PC' ? 580 : '85%'"
+    :close-on-click-modal="false"
+    center
+  >
+    <div class="setting-box">
+      <div class="setting-avatar-box">
+        <ElAvatar
+          size="large"
+          class="setting-avatar"
+          :src="userInfo?.avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
+        />
+        <!-- 添加头像上传覆盖层 -->
+        <div class="avatar-upload-mask" @click="triggerAvatarUpload">
+          <el-icon><Upload /></el-icon>
+          <span>更换头像</span>
+        </div>
+        <!-- 隐藏的文件上传输入框 -->
+        <input
+          ref="avatarInputRef"
+          type="file"
+          accept="image/*"
+          style="display: none"
+          @change="handleAvatarChange"
+        />
+        <el-icon
+          size="20"
+          color="var(--font-main)"
+          class="setting-avatar-sex"
+          v-if="userInfo.sex && [SexEnum.MAN, SexEnum.REMALE].includes(userInfo.sex)"
+          :style="{
+            backgroundColor: `var(${
+              userInfo.sex === SexEnum.MAN ? '--avatar-sex-bg-man' : '--avatar-sex-bg-female'
+            })`,
+          }"
+        >
+          <Female v-if="userInfo.sex === SexEnum.MAN" />
+          <Male v-if="userInfo.sex === SexEnum.REMALE" />
+        </el-icon>
+      </div>
+
+      <div class="setting-name">
+        <div class="name-edit-wrapper" v-show="editName.isEdit === false">
+          <span class="user-name">
+            <el-tooltip effect="dark" :content="currentBadge?.describe" placement="top">
+              <img class="setting-badge" :src="currentBadge?.img" v-show="currentBadge" />
+            </el-tooltip>
+            {{ userInfo.name || '-' }}
+          </span>
+          <el-button
+            class="name-edit-icon"
+            size="small"
+            :icon="EditPen"
+            circle
+            @click="onEditName"
+          />
+        </div>
+
+        <div class="name-edit-input-wrapper" v-show="editName.isEdit">
+          <el-input
+            v-model="editName.tempName"
+            size="small"
+            maxlength="12"
+            show-word-limit
+            placeholder="请输入昵称"
+          />
+          <div class="name-edit-action">
+            <el-button
+              class="action-btn"
+              size="small"
+              circle
+              :icon="CloseBold"
+              @click="onCancelEditName"
+            />
+            <el-button
+              class="action-btn"
+              size="small"
+              type="primary"
+              :loading="editName.saving"
+              circle
+              :icon="Select"
+              @click="onSaveUserName"
+            />
+          </div>
+        </div>
+      </div>
+
+      <ul class="badge-list">
+        <li class="badge-item" v-for="badge of badgeList" :key="badge.id">
+          <div class="badge-info">
+            <el-badge class="badge-item-dot" :hidden="badge.wearing !== IsYetEnum.YES" dot>
+              <div class="badge-img">
+                <img :src="badge.img" alt="" />
+              </div>
+            </el-badge>
+            <div class="badge-text">
+              <div class="badge-name">{{ badge.name || '' }}</div>
+              <div class="badge-des">{{ badge.describe || '' }}</div>
+            </div>
+          </div>
+
+          <div class="badge-action" v-if="badge.obtain === IsYetEnum.YES">
+            <el-button
+              v-if="badge.wearing !== IsYetEnum.YES"
+              type="primary"
+              @click="toggleWarningBadge(badge)"
+              >佩戴</el-button
+            >
+            <el-button v-else @click="toggleWarningBadge(badge)">卸下</el-button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </ElDialog>
+</template>
+
+
 <script setup lang="ts">
-import { computed, reactive, watchEffect } from 'vue'
+import { computed, reactive, ref, watchEffect } from 'vue'
 import { useRequest } from 'alova'
 import { ElMessage } from 'element-plus'
-import { Select, CloseBold, EditPen } from '@element-plus/icons-vue'
+import { Select, CloseBold, EditPen, Upload, Female, Male } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useCachedStore } from '@/stores/cached'
 import { SexEnum, IsYetEnum } from '@/enums'
@@ -50,14 +170,6 @@ const currentBadge = computed(() =>
   badgeList.value.find((item) => item.obtain === IsYetEnum.YES && item.wearing === IsYetEnum.YES),
 )
 
-// 更新缓存里面的用户信息
-const updateCurrentUserCache = (key: 'name' | 'wearingItemId', value: any) => {
-  const currentUser = userStore.userInfo.uid && cachedStore.userCachedList[userStore.userInfo.uid]
-  if (currentUser) {
-    currentUser[key] = value // 更新缓存里面的用户信息
-  }
-}
-
 // 佩戴卸下徽章
 const toggleWarningBadge = async (badge: BadgeType) => {
   if (!badge?.id) return
@@ -67,159 +179,116 @@ const toggleWarningBadge = async (badge: BadgeType) => {
   updateCurrentUserCache('wearingItemId', badge.id) // 更新缓存里面的用户徽章
 }
 
-// 编辑用户名
+/** ------------------头像上传相关-----------------------------**/
+const avatarInputRef = ref<HTMLInputElement | null>(null)
+
+const triggerAvatarUpload = () => {
+  avatarInputRef.value?.click()
+}
+
+const handleAvatarChange = async (event: Event) => {
+  const files = (event.target as HTMLInputElement).files
+  if (!files || files.length === 0) return
+
+  const file = files[0]
+
+  // 检查文件类型
+  if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+    ElMessage.error('请上传图片格式文件')
+    return
+  }
+
+  // 检查文件大小，限制为2MB
+  if (file.size > 2 * 1024 * 1024) {
+    ElMessage.error('图片大小不能超过2MB')
+    return
+  }
+
+  const fileName = file.name
+
+  try {
+    ElMessage.info('头像上传中...')
+
+    // 获取上传URL，注意scene应该是0（对应后端的AVATAR枚举）
+    const uploadData = await apis.getUploadUrl({
+      fileName,
+      scene: 0  // 使用正确的场景值，0代表头像
+    }).send()
+
+    if (uploadData?.uploadUrl) {
+      // 使用PUT方法上传文件到OSS
+      const response = await fetch(uploadData.uploadUrl, {
+        method: 'PUT',  // 修改为PUT方法
+        body: file
+      })
+
+      if (!response.ok) {
+        throw new Error('头像上传失败')
+      }
+
+      // 调用更新用户头像API
+      await apis.modifyUserAvatar(uploadData.downloadUrl).send()
+
+      // 更新本地状态和缓存
+      userStore.userInfo.avatar = uploadData.downloadUrl
+      updateCurrentUserCache('avatar', uploadData.downloadUrl)
+      ElMessage.success('头像修改成功')
+    }
+  } catch (error) {
+    console.error('头像上传失败:', error)
+    ElMessage.error('头像上传失败，请稍后重试')
+  } finally {
+    // 清空文件选择器
+    if (avatarInputRef.value) {
+      avatarInputRef.value.value = ''
+    }
+  }
+}
+
+// 更新缓存函数
+const updateCurrentUserCache = (key: 'name' | 'wearingItemId' | 'avatar', value: any) => {
+  const currentUser = userStore.userInfo.uid && cachedStore.userCachedList[userStore.userInfo.uid]
+  if (currentUser) {
+    currentUser[key] = value // 更新缓存里面的用户信息
+  }
+}
+
+// 修改用户名相关
 const onEditName = () => {
-  if (!userInfo.value?.modifyNameChance || userInfo.value.modifyNameChance === 0) return
   editName.isEdit = true
   editName.tempName = userInfo.value.name || ''
 }
 
-// 确认保存用户名
+const onCancelEditName = () => {
+  editName.isEdit = false
+  editName.tempName = ''
+  editName.saving = false
+}
+
 const onSaveUserName = async () => {
   if (!editName.tempName || editName.tempName.trim() === '') {
     ElMessage.warning('用户名不能为空哦~')
     return
   }
   if (editName.tempName === userInfo.value.name) {
-    ElMessage.warning('用户名和当前一样的哦~')
+    ElMessage.warning('用户名和当前一样哦~')
     return
   }
+
   editName.saving = true
 
-  await apis.modifyUserName(editName.tempName).send() // 更改用户名
-  userStore.userInfo.name = editName.tempName // 更新用户信息里面的用户名
-  updateCurrentUserCache('name', editName.tempName) // 更新缓存里面的用户信息
-  // 重置状态
-  onCancelEditName()
-  // 没有更名机会就不走下去
-  if (!userInfo.value?.modifyNameChance || userInfo.value.modifyNameChance === 0) return
-  userInfo.value.modifyNameChance = userInfo.value?.modifyNameChance - 1 // 减少更名次数
-}
-// 确认保存用户名
-const onCancelEditName = async () => {
-  editName.saving = false
-  editName.isEdit = false
-  editName.tempName = ''
+  try {
+    await apis.modifyUserName(editName.tempName).send()
+    userStore.userInfo.name = editName.tempName
+    updateCurrentUserCache('name', editName.tempName)
+    ElMessage.success('用户名修改成功')
+    onCancelEditName()
+  } catch (error) {
+    console.error('修改用户名失败:', error)
+  } finally {
+    editName.saving = false
+  }
 }
 </script>
-
-<template>
-  <ElDialog
-    class="setting-box-modal"
-    v-model="value"
-    :width="client === 'PC' ? 580 : '85%'"
-    :close-on-click-modal="false"
-    center
-  >
-    <div class="setting-box">
-      <div class="setting-avatar-box">
-        <ElAvatar
-          size="large"
-          class="setting-avatar"
-          :src="
-            userInfo?.avatar ||
-            'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
-          "
-        />
-        <el-icon
-          size="20"
-          color="var(--font-main)"
-          class="setting-avatar-sex"
-          v-if="userInfo.sex && [SexEnum.MAN, SexEnum.REMALE].includes(userInfo.sex)"
-          :style="{
-            backgroundColor: `var(${
-              userInfo.sex === SexEnum.MAN ? '--avatar-sex-bg-man' : '--avatar-sex-bg-female'
-            })`,
-          }"
-        >
-          <IEpFemale v-if="userInfo.sex === SexEnum.MAN" />
-          <IEpMale v-if="userInfo.sex === SexEnum.REMALE" />
-        </el-icon>
-      </div>
-
-      <div class="setting-name">
-        <div class="name-edit-wrapper" v-show="editName.isEdit === false">
-          <span class="user-name">
-            <el-tooltip effect="dark" :content="currentBadge?.describe" placement="top">
-              <img class="setting-badge" :src="currentBadge?.img" v-show="currentBadge" />
-            </el-tooltip>
-            {{ userInfo.name || '-' }}
-          </span>
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            :content="`剩余改名次数: ${userInfo.modifyNameChance || 0}`"
-            placement="right"
-          >
-            <el-button
-              class="name-edit-icon"
-              size="small"
-              :class="
-                userInfo?.modifyNameChance && userInfo.modifyNameChance > 0
-                  ? 'pointer'
-                  : 'not-allow is-disabled'
-              "
-              :icon="EditPen"
-              circle
-              @click="onEditName"
-            />
-          </el-tooltip>
-        </div>
-        <div class="name-edit-wrapper" v-show="editName.isEdit">
-          <ElInput type="text" v-model="editName.tempName" maxlength="6" />
-          <el-button
-            class="name-edit-icon"
-            size="small"
-            type="primary"
-            :icon="Select"
-            circle
-            @click="onSaveUserName"
-          />
-          <el-button
-            class="name-edit-icon"
-            size="small"
-            type="danger"
-            :icon="CloseBold"
-            circle
-            @click="onCancelEditName"
-          />
-        </div>
-      </div>
-
-      <el-alert
-        class="setting-tips"
-        title="Tips: MallChat名称不允许重复，快来抢占"
-        type="warning"
-        :closable="false"
-      />
-
-      <ul class="badge-list">
-        <li class="badge-item" v-for="badge of badgeList" :key="badge.id">
-          <img
-            class="badge-item-icon"
-            :class="{ 'badge-item-icon-has': badge.obtain === IsYetEnum.YES }"
-            :src="badge.img"
-            alt="badge"
-          />
-          <div class="badge-item-mask">
-            <template v-if="badge.obtain === IsYetEnum.YES">
-              <el-button
-                size="small"
-                v-if="badge.wearing === IsYetEnum.NO"
-                @click="toggleWarningBadge(badge)"
-              >
-                佩戴
-              </el-button>
-              <!-- <el-button size="small" v-if="badge.wearing === IsYetEnum.YES">卸下</el-button> -->
-            </template>
-            <el-tooltip effect="dark" :content="badge.describe" placement="top">
-              <el-icon class="badge-item-info" color="var(--font-main)"><IEpInfoFilled /></el-icon>
-            </el-tooltip>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </ElDialog>
-</template>
 
 <style lang="scss" src="./styles.scss" scoped />

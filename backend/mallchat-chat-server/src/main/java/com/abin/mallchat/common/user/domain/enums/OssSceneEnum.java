@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 public enum OssSceneEnum {
+    AVATAR(0, "头像", "/avatar"),
     CHAT(1, "聊天", "/chat"),
     EMOJI(2, "表情包", "/emoji"),
     ;

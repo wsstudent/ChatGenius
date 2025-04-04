@@ -36,6 +36,15 @@ public interface UserService {
     void modifyName(Long uid, ModifyNameReq req);
 
     /**
+     * 修改用户头像
+     *
+     * @param uid
+     * @param req
+     */
+    void modifyAvatar(Long uid, ModifyAvatarReq req);
+
+
+    /**
      * 用户徽章列表
      *
      * @param uid
