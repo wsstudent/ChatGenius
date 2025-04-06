@@ -110,4 +110,10 @@ public class ContactDao extends ServiceImpl<ContactMapper, Contact> {
         }
         return false;
     }
+
+    public Boolean removeAllByRoomId(Long roomId) {
+        LambdaQueryWrapper<Contact> wrapper = new QueryWrapper<Contact>().lambda()
+                .eq(Contact::getRoomId, roomId);
+        return this.remove(wrapper);
+    }
 }

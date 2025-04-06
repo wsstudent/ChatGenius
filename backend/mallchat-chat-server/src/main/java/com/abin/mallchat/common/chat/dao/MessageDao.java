@@ -8,6 +8,8 @@ import com.abin.mallchat.common.chat.mapper.MessageMapper;
 import com.abin.mallchat.common.common.domain.vo.request.CursorPageBaseReq;
 import com.abin.mallchat.common.common.domain.vo.response.CursorPageBaseResp;
 import com.abin.mallchat.common.common.utils.CursorUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
@@ -87,5 +89,11 @@ public class MessageDao extends ServiceImpl<MessageMapper, Message> {
             return this.update(wrapper);
         }
         return false;
+    }
+
+    public Boolean removeAllByRoomId(Long roomId) {
+        LambdaQueryWrapper<Message> wrapper = new QueryWrapper<Message>().lambda()
+                .eq(Message::getRoomId, roomId);
+        return this.remove(wrapper);
     }
 }

@@ -191,4 +191,10 @@ public class GroupMemberDao extends ServiceImpl<GroupMemberMapper, GroupMember> 
         }
         return false;
     }
+
+    public Boolean removeAllByGroupId(Long groupId) {
+        LambdaQueryWrapper<GroupMember> wrapper = new QueryWrapper<GroupMember>().lambda()
+                .eq(GroupMember::getGroupId, groupId);
+        return this.remove(wrapper);
+    }
 }
