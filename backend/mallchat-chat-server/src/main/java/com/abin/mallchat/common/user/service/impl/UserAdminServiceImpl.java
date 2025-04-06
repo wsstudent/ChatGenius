@@ -11,6 +11,7 @@ import com.abin.mallchat.common.user.domain.vo.request.user.UpdateUserReq;
 import com.abin.mallchat.common.user.domain.vo.response.user.UserInfoResp;
 import com.abin.mallchat.common.user.service.UserAdminService;
 import com.abin.mallchat.common.user.service.adapter.UserAdapter;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.abin.mallchat.common.common.utils.PasswordEncoder;
@@ -59,10 +60,16 @@ public class UserAdminServiceImpl implements UserAdminService {
         existUser = userDao.getByUsername(username);
         AssertUtil.isEmpty(existUser, "用户名已被使用");
 
+        // 处理密码，如果为空则使用默认密码
+        String password = req.getPassword();
+        if (StringUtils.isBlank(password)) {
+            password = "123456"; // 设置默认密码
+        }
+
         // 创建新用户
         User user = User.builder()
                 .username(username)
-                .password(PasswordEncoder.encode(req.getPassword()))
+                .password(PasswordEncoder.encode(password))
                 .name(name)
                 .avatar(req.getAvatar())
                 .sex(req.getSex())

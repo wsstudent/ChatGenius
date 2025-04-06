@@ -27,6 +27,8 @@ const formData = ref<UserInfoType>({
   sex: 1
 })
 const isEdit = computed(() => !!formData.value.id)
+const useDefaultPassword = ref(true)
+const defaultPassword = ref('123456')
 
 // 判断当前用户是否为超级管理员
 const isAdmin = computed(() => userStore.userInfo.power === 2)
@@ -48,6 +50,11 @@ const getUserList = async () => {
 // 新增/编辑用户
 const handleSave = async () => {
   if (!isAdmin.value) return
+
+  // 如果使用默认密码，则清空密码字段，后端会使用默认密码
+  if (useDefaultPassword.value && !isEdit.value) {
+    formData.value.password = defaultPassword.value
+  }
 
   try {
     if (isEdit.value) {
@@ -85,10 +92,11 @@ const handleDelete = (id: number) => {
 
 // 打开新增对话框
 const openAddDialog = () => {
+  useDefaultPassword.value = true
   formData.value = {
     id: null,
     username: '',
-    password: '',
+    password: defaultPassword.value,
     name: '',
     avatar: '',
     sex: 1
@@ -146,13 +154,28 @@ onMounted(() => {
       :title="isEdit ? '编辑用户' : '新增用户'"
       v-model="dialogVisible"
       width="500px">
-      <el-form :model="formData" label-width="80px">
+      <el-form :model="formData" label-width="100px">
         <el-form-item label="用户名">
-          <el-input v-model="formData.username"/>
+          <el-input v-model="formData.username" />
         </el-form-item>
-        <el-form-item label="密码" v-if="!isEdit">
-          <el-input v-model="formData.password" type="password" />
-        </el-form-item>
+
+        <template v-if="!isEdit">
+          <el-form-item label="密码设置">
+            <el-radio-group v-model="useDefaultPassword">
+              <el-radio :label="true">使用默认密码</el-radio>
+              <el-radio :label="false">自定义密码</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item label="默认密码" v-if="useDefaultPassword">
+            <el-input v-model="defaultPassword" placeholder="请输入默认密码" />
+          </el-form-item>
+
+          <el-form-item label="密码" v-if="!useDefaultPassword">
+            <el-input v-model="formData.password" type="password" placeholder="请输入密码" />
+          </el-form-item>
+        </template>
+
         <el-form-item label="昵称">
           <el-input v-model="formData.name" />
         </el-form-item>

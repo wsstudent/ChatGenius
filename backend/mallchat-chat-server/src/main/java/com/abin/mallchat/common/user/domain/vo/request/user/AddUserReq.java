@@ -21,8 +21,7 @@ public class AddUserReq {
     @ApiModelProperty("用户名")
     private String username;
 
-    @NotBlank(message = "密码不能为空")
-    @ApiModelProperty("密码")
+    @ApiModelProperty("密码(可选，为空时使用默认密码)")
     private String password;
 
     @NotBlank(message = "昵称不能为空")
