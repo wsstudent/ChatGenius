@@ -32,18 +32,20 @@ spring:
     host: ${mallchat.redis.host}
     # Redis服务器端口号
     port: ${mallchat.redis.port}
+    # Redis密码
+    password: 123456
     # 使用的数据库索引，默认是0
     database: 0
     # 连接超时时间
     timeout: 1800000
   # 新增 Redisson 配置
-  redisson:
-    config:
-      singleServerConfig:
-        address: "redis://${mallchat.redis.host}:${mallchat.redis.port}"
-        username: ${mallchat.redis.username}
-        password: ${mallchat.redis.password}
-        database: 0
+#  redisson:
+#    config:
+#      singleServerConfig:
+#        address: "redis://${mallchat.redis.host}:${mallchat.redis.port}"
+#        username: ${mallchat.redis.username}
+#        password: ${mallchat.redis.password}
+#        database: 0
 
 
   jackson:
