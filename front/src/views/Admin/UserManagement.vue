@@ -4,11 +4,21 @@ import { useUserStore } from '@/stores/user'
 import apis from '@/services/apis'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+// 定义用户类型接口
+interface UserInfoType {
+  id: number | null;
+  username: string;
+  password?: string;
+  name: string;
+  avatar: string;
+  sex: number;
+}
+
 const userStore = useUserStore()
-const userList = ref([])
+const userList = ref<UserInfoType[]>([])
 const loading = ref(false)
 const dialogVisible = ref(false)
-const formData = ref({
+const formData = ref<UserInfoType>({
   id: null,
   username: '',
   password: '',
@@ -87,7 +97,7 @@ const openAddDialog = () => {
 }
 
 // 打开编辑对话框
-const openEditDialog = (row) => {
+const openEditDialog = (row: UserInfoType) => {
   formData.value = { ...row }
   dialogVisible.value = true
 }
@@ -138,7 +148,7 @@ onMounted(() => {
       width="500px">
       <el-form :model="formData" label-width="80px">
         <el-form-item label="用户名">
-          <el-input v-model="formData.username" :disabled="isEdit" />
+          <el-input v-model="formData.username"/>
         </el-form-item>
         <el-form-item label="密码" v-if="!isEdit">
           <el-input v-model="formData.password" type="password" />

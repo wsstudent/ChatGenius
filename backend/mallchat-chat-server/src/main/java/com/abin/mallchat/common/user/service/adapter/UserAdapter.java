@@ -46,9 +46,16 @@ public class UserAdapter {
         return user;
     }
 
+    /**
+     * 构建用户信息响应
+     *
+     * @param userInfo         用户信息
+     * @param countByValidItemId 头像数量
+     * @return 用户信息响应
+     */
     public static UserInfoResp buildUserInfoResp(User userInfo, Integer countByValidItemId) {
         UserInfoResp userInfoResp = new UserInfoResp();
-        BeanUtil.copyProperties(userInfo, userInfoResp);
+        BeanUtil.copyProperties(userInfo, userInfoResp);  //  Hutool 工具库提供的一个实用方法，它可以自动复制两个对象之间的同名属性
         userInfoResp.setModifyNameChance(countByValidItemId);
         return userInfoResp;
     }

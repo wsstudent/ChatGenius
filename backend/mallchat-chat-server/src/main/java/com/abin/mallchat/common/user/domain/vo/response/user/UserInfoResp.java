@@ -23,6 +23,9 @@ public class UserInfoResp {
     @ApiModelProperty(value = "用户id")
     private Long id;
 
+    @ApiModelProperty(value = "用户名")
+    private String username; // 新增字段
+
     @ApiModelProperty(value = "用户昵称")
     private String name;
 
