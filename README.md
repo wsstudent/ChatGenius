@@ -12,6 +12,17 @@ docker run \
           -e "MINIO_ROOT_PASSWORD=79orSY%Uvy|M" \
           quay.io/minio/minio server /data --console-address ":9001"
 ```
+## Minio桶创建
+登录 http://localhost:9001/login
+输入 用户名和密码  
+
+```
+admin
+```
+```
+79orSY%Uvy|M
+```
+创建一个桶，命名为 `default`，并设置为custom桶。
 
 ## redis
 ```bash
