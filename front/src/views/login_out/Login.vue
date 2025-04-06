@@ -1,6 +1,6 @@
 <template>
   <!-- 前后端共用登录页面 -->
-  <div id="body-bg">
+  <div id="body-bg" :class="currentBg">
     <!--页面加载-->
     <div
       v-if="fullscreenLoading"
@@ -40,23 +40,47 @@
               />
             </div>
           </el-form-item>
-          <!--          <el-form-item prop="role">-->
-          <!--            <div>-->
-          <!--              <select v-model="ruleForm.role" id="status" class="custom-select">-->
-          <!--                <option value="TEACHER">教师</option>-->
-          <!--                <option value="STUDENT">学生</option>-->
-          <!--              </select>-->
-          <!--            </div>-->
-          <!--          </el-form-item>-->
 
           <div class="inputBox">
             <el-button @click="submitForm(ruleFormRef)">登 录</el-button>
           </div>
         </el-form>
-        '/',
       </div>
     </transition>
+
+    <!-- 添加背景选择器 -->
+    <div class="bg-selector">
+      <!-- 预设背景选项 -->
+      <div
+        v-for="bg in backgrounds"
+        :key="bg.id"
+        :class="['bg-option', { active: currentBg === bg.class }]"
+        :style="{ backgroundImage: `url(${bg.thumbnail})` }"
+        @click="changeBg(bg.class)"
+      ></div>
+
+      <!-- 自定义背景选项 -->
+      <div
+        v-for="bg in customBackgrounds"
+        :key="bg.id"
+        :class="['bg-option', { active: currentBg === bg.class }]"
+        :style="{ backgroundImage: `url(${bg.thumbnail})` }"
+        @click="changeBg(bg.class)"
+      ></div>
+
+      <!-- 上传按钮 -->
+      <div class="bg-upload" @click="triggerUpload">
+      </div>
+      <input
+        ref="fileInput"
+        type="file"
+        accept="image/*"
+        style="display: none"
+        @change="handleFileUpload"
+      />
+    </div>
   </div>
+
   <!-- 添加 GitHub 水印链接 -->
   <a href="https://github.com/wsstudent" target="_blank" class="github-link">
     <div class="github-watermark">
@@ -71,11 +95,151 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import wsIns from '@/utils/websocket'
 import { WsRequestMsgType } from '@/utils/wsType'
+
+// 背景切换功能
+const currentBg = ref('bg-1');
+const backgrounds = reactive([
+  { id: 1, class: 'bg-1', thumbnail: new URL('../../assets/login_bg.jpg', import.meta.url).href },
+  { id: 2, class: 'bg-2', thumbnail: new URL('../../assets/bg.jpg', import.meta.url).href },
+  { id: 3, class: 'bg-3', thumbnail: new URL('../../assets/login_bg2.jpg', import.meta.url).href }
+]);
+
+// 用户自定义背景
+const customBackgrounds = ref<{id: number, class: string, url: string, thumbnail: string}[]>([]);
+const fileInput = ref<HTMLInputElement | null>(null);
+
+// 触发文件上传对话框
+const triggerUpload = () => {
+  fileInput.value?.click();
+};
+
+// 处理文件上传
+const handleFileUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (!file) return;
+
+  // 检查文件类型和大小
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('请上传图片文件');
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) { // 5MB限制
+    ElMessage.error('图片大小不能超过5MB');
+    return;
+  }
+
+  // 将文件转换为Data URL
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (!e.target?.result) return;
+
+    // 创建新的背景选项
+    const imageUrl = e.target.result as string;
+    const newBgId = Date.now(); // 使用时间戳作为ID
+    const bgClass = `custom-bg-${newBgId}`;
+
+    // 添加到自定义背景列表
+    customBackgrounds.value.push({
+      id: newBgId,
+      class: bgClass,
+      url: imageUrl,
+      thumbnail: imageUrl
+    });
+
+    // 保存到本地存储
+    saveCustomBackgrounds();
+
+    // 添加CSS样式
+    addCustomBackgroundStyle(bgClass, imageUrl);
+
+    // 切换到新上传的背景
+    changeBg(bgClass);
+
+    ElMessage.success('背景已上传并应用');
+  };
+
+  reader.readAsDataURL(file);
+
+  // 重置 input 以便再次选择同一文件
+  target.value = '';
+};
+
+// 添加自定义背景的CSS样式
+const addCustomBackgroundStyle = (className: string, imageUrl: string) => {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = `
+    #body-bg.${className}::before {
+      background-image: url('${imageUrl}');
+    }
+    .app-wrapper.${className} {
+      background-image: url('${imageUrl}');
+    }
+    #body-bg.${className} .container span::before,
+    #body-bg.${className} .container span::after {
+      background-image: url('${imageUrl}');
+    }
+  `;
+  document.head.appendChild(styleElement);
+};
+
+// 保存自定义背景到本地存储
+const saveCustomBackgrounds = () => {
+  localStorage.setItem('custom-backgrounds', JSON.stringify(customBackgrounds.value));
+};
+
+// 加载自定义背景
+const loadCustomBackgrounds = () => {
+  const saved = localStorage.getItem('custom-backgrounds');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      customBackgrounds.value = parsed;
+
+      // 为每个自定义背景添加CSS样式
+      customBackgrounds.value.forEach(bg => {
+        addCustomBackgroundStyle(bg.class, bg.url);
+      });
+    } catch (e) {
+      console.error('加载自定义背景失败', e);
+    }
+  }
+};
+
+// 合并预设背景和自定义背景
+const allBackgrounds = computed(() => {
+  return [...backgrounds, ...customBackgrounds.value];
+});
+
+const changeBg = (bgClass: string) => {
+  currentBg.value = bgClass;
+
+  // 更新当前页面背景
+  document.getElementById('body-bg')?.classList.forEach(cls => {
+    if (cls.startsWith('bg-') || cls.startsWith('custom-bg-')) {
+      document.getElementById('body-bg')?.classList.remove(cls);
+    }
+  });
+  document.getElementById('body-bg')?.classList.add(bgClass);
+
+  // 更新全局背景
+  document.querySelector('.app-wrapper')?.classList.forEach(cls => {
+    if (cls.startsWith('bg-') || cls.startsWith('custom-bg-')) {
+      document.querySelector('.app-wrapper')?.classList.remove(cls);
+    }
+  });
+  document.querySelector('.app-wrapper')?.classList.add(bgClass);
+
+  // 保存用户选择到本地存储
+  localStorage.setItem('preferred-login-bg', bgClass);
+};
 
 // 全屏加载状态
 const fullscreenLoading = ref(true)
@@ -85,21 +249,29 @@ const contentVisible = ref(false)
 
 // 监听页面资源加载情况
 onMounted(async () => {
-  /**
-   * 这里使用 nextTick() 是为了：
-   * 避免闪烁：确保加载动画元素（v-loading.fullscreen.lock="fullscreenLoading"）已完全渲染到 DOM 中
-   * 顺序保证：先确保 DOM 更新完成，再开始检测背景图片等资源的加载情况
-   * 平滑过渡：当背景图片等资源加载完成后，能够平滑切换到实际内容，不会出现渲染不完整或闪烁的情况
-   * 如果没有 nextTick()，可能会在 DOM 尚未完全准备好的情况下开始资源检测，导致不理想的用户体验或视觉异常
-   */
   await nextTick()
 
   // 先显示背景图
   document.getElementById('body-bg')?.classList.add('loaded')
 
+  // 加载自定义背景
+  loadCustomBackgrounds();
+
+  // 加载保存的背景设置
+  const savedBg = localStorage.getItem('preferred-login-bg');
+  if (savedBg) {
+    // 检查是否是有效的背景类名
+    const isValid = [...backgrounds, ...customBackgrounds.value]
+                    .some(bg => bg.class === savedBg);
+
+    if (isValid) {
+      changeBg(savedBg);
+    }
+  }
+
   // 预加载背景图
   const backgroundImage = new Image()
-  backgroundImage.src = '../../assets/imgs/bg.jpg'
+  backgroundImage.src = '../../assets/bg.jpg'
 
   // 设置背景图加载完成后的回调
   backgroundImage.onload = backgroundImage.onerror = async () => {
@@ -161,44 +333,12 @@ const validatePass = (rule: any, value: any, callback: any) => {
 const ruleForm = reactive({
   username: '',
   password: '',
-  // role: ''
 })
+
 const rules = reactive<FormRules<typeof ruleForm>>({
   username: [{ validator: checkUsername, trigger: 'blur' }],
   password: [{ validator: validatePass, trigger: 'blur' }],
-  // role: [{ required: true, message: '请选择身份', trigger: 'change' }]
 })
-
-// 登录接口以及后台验证成功后的路由跳转
-// const router = useRouter()
-// const submitForm = async (formEl: FormInstance | undefined) => {
-//   if (!formEl) return
-//   await formEl.validate(async (valid) => {
-//     if (valid) {
-//       try {
-//         const response = await request.post('/login', ruleForm)
-//         if (response.code === '200') {
-//           localStorage.setItem('xm-user', JSON.stringify(response.data))
-//           ElMessage.success('登录成功')
-//
-//           // 根据角色跳转到不同页面
-//           if (ruleForm.role === 'TEACHER') {
-//             await router.push('/backend/main')
-//           } else {
-//             await router.push('/')  // 学生界面
-//           }
-//         }else {
-//           ElMessage.error(response.msg)
-//         }
-//       } catch (error) {
-//         console.error('登录失败:', error)
-//         ElMessage.error('登录失败，请重试')
-//       }
-//     } else {
-//       console.log('error submit!')
-//     }
-//   })
-// }
 
 // 登录处理
 const submitForm = async (formEl: FormInstance | undefined) => {

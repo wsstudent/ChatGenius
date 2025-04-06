@@ -5,6 +5,68 @@
   font-family: 'Poppins', sans-serif;
 }
 
+.bg-selector {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  gap: 8px;
+  z-index: 1001;
+}
+
+.bg-option {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-size: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.bg-option.active {
+  border-color: #45f3ff;
+  transform: scale(1.1);
+}
+
+.bg-upload {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.bg-upload:hover {
+  background: rgba(69, 243, 255, 0.2);
+  border-color: #45f3ff;
+}
+
+.bg-upload::before,
+.bg-upload::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+}
+
+.bg-upload::before {
+  width: 15px;
+  height: 2px;
+}
+
+.bg-upload::after {
+  width: 2px;
+  height: 15px;
+}
+
 #body-bg {
   display: flex;
   justify-content: center;
@@ -17,9 +79,24 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('@/assets/login_bg.jpg') fixed center;
+  background-size: cover;
+  background: url('../../assets/bg.jpg') fixed center;
   animation: bg-zoom 1.5s ease-out forwards;
 }
+
+/* 添加背景切换类 */
+#body-bg.bg-1::before {
+  background-image: url('../../assets/login_bg.jpg');
+}
+
+#body-bg.bg-2::before {
+  background-image: url('../../assets/bg.jpg');
+}
+
+#body-bg.bg-3::before {
+  background-image: url('../../assets/login_bg2.jpg');
+}
+
 /* 背景图缩放动画 */
 @keyframes bg-zoom {
   0% {
@@ -95,8 +172,9 @@
   position: absolute;
   inset: 5px;
   background-size: cover;
-  background: url('@/assets/login_bg.jpg') fixed center;
+  background: url('../../assets/login_bg.jpg') fixed center;
   filter: blur(10px);
+  transition: background-image 0.5s ease;
 }
 
 .container span::after {
@@ -104,8 +182,25 @@
   position: absolute;
   inset: 5px;
   background-size: cover;
-  background: url('@/assets/login_bg.jpg') fixed center;
+  background: url('../../assets/login_bg.jpg') fixed center;
   filter: blur(15px);
+  transition: background-image 0.5s ease;
+}
+
+/* 添加容器内部模糊背景的背景切换 */
+#body-bg.bg-1 .container span::before,
+#body-bg.bg-1 .container span::after {
+  background-image: url('../../assets/login_bg.jpg');
+}
+
+#body-bg.bg-2 .container span::before,
+#body-bg.bg-2 .container span::after {
+  background-image: url('../../assets/bg.jpg');
+}
+
+#body-bg.bg-3 .container span::before,
+#body-bg.bg-3 .container span::after {
+  background-image: url('../../assets/login_bg2.jpg');
 }
 
 .loginForm {
