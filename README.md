@@ -22,6 +22,8 @@ admin
 ```
 79orSY%Uvy|M
 ```
+
+
 创建一个桶，命名为 `default`，并设置为custom桶。
 
 ## redis

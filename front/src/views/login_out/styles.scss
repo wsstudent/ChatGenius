@@ -17,7 +17,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1e3c72 0%, #5473a8 50%, #49be9e 100%);
+  background: url('@/assets/login_bg.jpg') fixed center;
   animation: bg-zoom 1.5s ease-out forwards;
 }
 /* 背景图缩放动画 */
@@ -55,6 +55,7 @@
     transform: translateY(0) scale(1);
   }
 }
+
 
 .container::before {
   content: ' ';
@@ -94,7 +95,7 @@
   position: absolute;
   inset: 5px;
   background-size: cover;
-  background: linear-gradient(135deg, #1e3c72 0%, #5473a8 50%, #49be9e 100%);
+  background: url('@/assets/login_bg.jpg') fixed center;
   filter: blur(10px);
 }
 
@@ -103,7 +104,7 @@
   position: absolute;
   inset: 5px;
   background-size: cover;
-  background: linear-gradient(135deg, #1e3c72 0%, #5473a8 50%, #49be9e 100%);
+  background: url('@/assets/login_bg.jpg') fixed center;
   filter: blur(15px);
 }
 
