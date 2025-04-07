@@ -76,9 +76,10 @@ public class MessageSendListener {
     public void handlerMsg(@NotNull MessageSendEvent event) {
         Message message = messageDao.getById(event.getMsgId());
         Room room = roomCache.get(message.getRoomId());
-        if (isHotRoom(room)) {
-            openAIService.chat(message);
-        }
+//        if (isHotRoom(room)) {
+//            openAIService.chat(message);
+//        }
+        openAIService.chat(message); // 无论那个房间都要推送
     }
 
     public boolean isHotRoom(Room room) {
