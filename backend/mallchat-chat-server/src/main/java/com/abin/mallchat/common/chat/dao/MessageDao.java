@@ -81,19 +81,10 @@ public class MessageDao extends ServiceImpl<MessageMapper, Message> {
      * @return 是否删除成功
      */
     public Boolean removeByRoomId(Long roomId, List<Long> uidList) {
-        if (CollectionUtil.isNotEmpty(uidList)) {
-            LambdaUpdateWrapper<Message> wrapper = new UpdateWrapper<Message>().lambda()
-                    .eq(Message::getRoomId, roomId)
-                    .in(Message::getFromUid, uidList)
-                    .set(Message::getStatus, MessageStatusEnum.DELETE.getStatus());
-            return this.update(wrapper);
-        }
-        return false;
-    }
-
-    public Boolean removeAllByRoomId(Long roomId) {
-        LambdaQueryWrapper<Message> wrapper = new QueryWrapper<Message>().lambda()
-                .eq(Message::getRoomId, roomId);
-        return this.remove(wrapper);
+        LambdaUpdateWrapper<Message> wrapper = new UpdateWrapper<Message>().lambda()
+                .eq(Message::getRoomId, roomId)
+                .in(Message::getFromUid, uidList)
+                .set(Message::getStatus, MessageStatusEnum.DELETE.getStatus());
+        return this.update(wrapper);
     }
 }
