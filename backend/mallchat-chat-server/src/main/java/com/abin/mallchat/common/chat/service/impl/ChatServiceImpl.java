@@ -191,6 +191,10 @@ public class ChatServiceImpl implements ChatService {
         }
         AssertUtil.isNotEmpty(receiveUid, "请先登录");
         Contact contact = contactDao.get(receiveUid, roomId);
+        // 添加空值检查
+        if (contact == null) {
+            return null; // 如果是新创建的房间，返回null表示可以查看所有消息
+        }
         return contact.getLastMsgId();
     }
 
