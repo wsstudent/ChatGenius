@@ -31,7 +31,7 @@ public class TokenInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 添加详细调试信息
         System.out.println("TokenInterceptor被调用: " + request.getRequestURI());
-        log.error("TokenInterceptor处理请求: " + request.getRequestURI()); // 使用ERROR级别确保一定会显示
+        log.info("TokenInterceptor处理请求: " + request.getRequestURI());
 
 
         //获取用户登录token

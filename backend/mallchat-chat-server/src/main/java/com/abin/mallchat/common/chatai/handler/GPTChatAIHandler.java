@@ -153,26 +153,41 @@ public class GPTChatAIHandler extends AbstractChatAIHandler {
 
     @Override
     protected boolean supports(Message message) {
-        if (!chatGPTProperties.isUse()) {
-            return false;
-        }
-        /* 前端传@信息后取消注释 */
-
+        // 检查消息扩展信息
         MessageExtra extra = message.getExtra();
-        if (extra == null) {
-            return false;
-        }
-        if (CollectionUtils.isEmpty(extra.getAtUidList())) {
-            return false;
-        }
-        if (!extra.getAtUidList().contains(chatGPTProperties.getAIUserId())) {
+        if (extra == null || CollectionUtils.isEmpty(extra.getAtUidList())) {
+            log.debug("消息不包含@用户列表，跳过处理，消息ID={}", message.getId());
             return false;
         }
 
-        if (StringUtils.isBlank(message.getContent())) {
+        // 检查是否@了AI用户
+        if (!extra.getAtUidList().contains(chatGPTProperties.getAIUserId())) {
+            log.debug("消息没有@AI用户，跳过处理，消息ID={}", message.getId());
             return false;
         }
-        return StringUtils.contains(message.getContent(), "@" + AI_NAME)
-                && StringUtils.isNotBlank(message.getContent().replace(AI_NAME, "").trim());
+
+        // 检查消息内容
+        if (StringUtils.isBlank(message.getContent())) {
+            log.debug("消息内容为空，跳过处理，消息ID={}", message.getId());
+            return false;
+        }
+
+        // 处理消息内容中的特殊字符，并替换@AI_NAME
+        String content = message.getContent()
+            .replace('\u00a0', ' ')  // 替换不间断空格为普通空格
+            .replace('\u3000', ' ')  // 替换全角空格
+            .replace("@" + AI_NAME, "") // 替换@AI_NAME
+            .trim();
+
+        boolean result = StringUtils.contains(message.getContent(), "@" + AI_NAME)
+            && StringUtils.isNotBlank(content);
+
+        log.debug("消息ID={}，内容={}，Unicode={}，是否支持AI回复={}",
+            message.getId(),
+            message.getContent(),
+            message.getContent().codePoints().mapToObj(c -> String.format("\\u%04x", c)).collect(java.util.stream.Collectors.joining()),
+            result);
+
+        return result;
     }
 }
