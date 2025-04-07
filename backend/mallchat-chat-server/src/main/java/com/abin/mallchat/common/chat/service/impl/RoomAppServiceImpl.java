@@ -44,6 +44,7 @@ import com.abin.mallchat.common.user.service.IRoleService;
 import com.abin.mallchat.common.user.service.cache.UserCache;
 import com.abin.mallchat.common.user.service.cache.UserInfoCache;
 import com.abin.mallchat.common.user.service.impl.PushService;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -57,12 +58,14 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+
 /**
  * Description:
  * Author: <a href="https://github.com/zongzibinbin">abin</a>
  * Date: 2023-07-22
  */
 @Service
+@Slf4j
 public class RoomAppServiceImpl implements RoomAppService {
 
     @Autowired
@@ -252,19 +255,44 @@ public class RoomAppServiceImpl implements RoomAppService {
     @Override
     @Transactional
     public Long addGroup(Long uid, GroupAddReq request) {
+        // 创建群组基础结构
         RoomGroup roomGroup = roomService.createGroupRoom(uid);
-        // 默认将ChatGpt加入群组
-        User chatGPT = userDao.getByUsername("ChatGPT");
-        List<Long> uidList = request.getUidList();
-        if (!uidList.contains(chatGPT.getId())) {
-            uidList.add(chatGPT.getId());
-        }
+
+        // 初始化用户列表，确保不为 null
+        List<Long> uidList = Optional.ofNullable(request.getUidList())
+                .orElse(new ArrayList<>());
+
+        // 添加默认成员（如 ChatGPT）
+        addDefaultMemberIfNeeded(uidList);
+
         // 批量保存群成员
-        List<GroupMember> groupMembers = RoomAdapter.buildGroupMemberBatch(uidList, roomGroup.getId());
-        groupMemberDao.saveBatch(groupMembers);
-        // 发送邀请加群消息==》触发每个人的会话
-        applicationEventPublisher.publishEvent(new GroupMemberAddEvent(this, roomGroup, groupMembers, uid));
+        if (!CollectionUtil.isEmpty(uidList)) {
+            List<GroupMember> groupMembers = RoomAdapter.buildGroupMemberBatch(uidList, roomGroup.getId());
+            groupMemberDao.saveBatch(groupMembers);
+
+            // 发送邀请加群消息
+            applicationEventPublisher.publishEvent(new GroupMemberAddEvent(this, roomGroup, groupMembers, uid));
+        }
+
         return roomGroup.getRoomId();
+    }
+
+    /**
+     * 添加默认群成员
+     * @param uidList 当前用户列表
+     */
+    private void addDefaultMemberIfNeeded(List<Long> uidList) {
+        try {
+            User chatGPT = userDao.getByUsername("ChatGPT");
+            if (chatGPT != null && !uidList.contains(chatGPT.getId())) {
+                uidList.add(chatGPT.getId());
+                log.info("已将 ChatGPT(uid={}) 添加到群组成员中", chatGPT.getId());
+            } else if (chatGPT == null) {
+                log.warn("未找到 ChatGPT 用户，跳过添加默认成员");
+            }
+        } catch (Exception e) {
+            log.warn("添加默认成员 ChatGPT 失败", e);
+        }
     }
 
     private boolean hasPower(GroupMember self) {
