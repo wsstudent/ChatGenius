@@ -1,113 +1,168 @@
+// 侧边栏容器样式
 .side {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   width: 300px;
   height: 100%;
-  padding: 20px 10px;
+  padding: 16px 10px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
+// 添加群组按钮样式
 .add-group {
   margin-left: auto;
+  margin-bottom: 12px;
 }
 
+// 侧边栏折叠区域样式
 .side-collapse {
-  display: flex;
   flex: 1;
+  display: flex;
   flex-direction: column;
-  align-items: stretch;
-
-  // height: 100%;
+  border: none;
   overflow: hidden;
-  border-top-width: 0;
-  border-bottom-width: 0;
 }
 
+// 当折叠项处于活动状态时的样式
 :deep(.el-collapse-item.is-active) {
   display: flex;
-
-  // flex: 1;
   flex-direction: column;
-  align-items: stretch;
+  height: calc(100% - 48px);
   overflow: hidden;
 }
 
-:deep(.el-collapse-item.is-active .el-collapse-item__content) {
-  height: 100%;
-  padding-bottom: 0;
+// 折叠项头部样式
+:deep(.el-collapse-item__header) {
+  font-weight: 600;
+  padding: 0 4px;
 }
 
+// 折叠项内容区域样式
+:deep(.el-collapse-item__content) {
+  height: 100%;
+  padding: 8px 0 0;
+}
+
+// 列表项信息容器
 .item-info {
   display: flex;
-  flex: 1;
   align-items: center;
   height: 48px;
-  padding-right: 8px;
-  padding-left: 8px;
-  border-radius: 4px;
+  padding: 0 12px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 
+  // 鼠标悬停效果
   &:hover {
     cursor: pointer;
     background-color: var(--background-2);
   }
 
+  // 鼠标点击效果
+  &:active {
+    background-color: var(--background-3, #f0f0f0);
+  }
+
+  // 列表项右侧内容区域
   &-right {
     display: flex;
     flex: 1;
     flex-direction: column;
     justify-content: space-between;
-    padding-right: 18px;
     margin-left: 8px;
+    padding-right: 12px;
     overflow: hidden;
   }
 
+  // 联系人列表项特殊样式
   &.contact-item {
     .item-info-right {
       justify-content: center;
     }
   }
 
+  // 列表项名称样式
   &-name {
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-size: 14px;
     font-weight: 600;
+    line-height: 1.2;
   }
 
+  // 接受按钮样式
   &-accept-btn {
     font-size: 12px;
     color: var(--color-white);
-    appearance: none;
-    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
     background-color: var(--color-primary);
     border: none;
-    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    // 鼠标悬停效果
+    &:hover {
+      opacity: 0.9;
+    }
+
+    // 鼠标点击效果
+    &:active {
+      opacity: 0.8;
+    }
   }
 
+  // 接受文本样式
   &-accept-text {
     font-size: 12px;
     color: var(--font-gray);
   }
 
+  // 消息内容样式
   &-msg {
     overflow: hidden;
     font-size: 12px;
     color: var(--font-light);
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.4;
   }
 }
 
+// 已读/未读列表容器
 .read-unread-list {
   height: 100%;
   padding: 0;
   margin: 0;
-  overflow: hidden;
   overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+
+  // WebKit浏览器滚动条样式
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  // WebKit浏览器滚动条滑块样式
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary);
+    border-radius: 3px;
+  }
 }
 
+// 头像样式
 .avatar {
   min-width: 40px;
+  flex-shrink: 0;
+}
+
+// 已读/未读列表无数据时的提示样式
+.read-unread-no-data {
+  padding: 12px;
+  text-align: center;
+  color: var(--font-light);
+  font-size: 14px;
 }

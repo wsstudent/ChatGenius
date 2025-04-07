@@ -21,49 +21,6 @@ const toggleGroupListShow = () => (groupStore.showGroupList = !groupStore.showGr
 const isPc = computed(() => client === 'PC')
 // 是否超级管理员
 const isAdmin = computed(() => userStore.userInfo.power === 2)
-
-const menuList = [
-  // {
-  //   name: '',
-  //   desc: '哔哩哔哩',
-  //   icon: 'bilibili',
-  //   handler: () => {
-  //     window.open('https://space.bilibili.com/146719540', '_blank')
-  //   },
-  // },
-  // {
-  //   name: '项目文档',
-  //   desc: '语雀',
-  //   icon: 'yuque',
-  //   handler: () => {
-  //     window.open('https://www.yuque.com/snab/planet/cef1mcko4fve0ur3', '_blank')
-  //   },
-  // },
-  // {
-  //   name: '618超优惠',
-  //   desc: '腾讯云',
-  //   icon: 'qcloud',
-  //   handler: () => {
-  //     window.open('https://curl.qcloud.com/qSaH0JLT', '_blank')
-  //   },
-  // },
-  {
-    name: ' ',
-    desc: 'MallChatWeb Server',
-    icon: 'github',
-    handler: () => {
-      window.open('https://github.com/wsstudent/', '_blank')
-    },
-  },
-  {
-    name: ' ',
-    desc: 'MallChatWeb Web',
-    icon: 'github',
-    handler: () => {
-      window.open('https://github.com/yukinoa0', '_blank')
-    },
-  },
-]
 </script>
 
 <template>
@@ -95,24 +52,6 @@ const menuList = [
       <router-link v-if="isAdmin" exactActiveClass="tool-icon-active" to="/admin/users">
         <el-icon class="tool-icon"><Tools /></el-icon>
       </router-link>
-    </div>
-    <div class="menu">
-      <el-tooltip effect="dark" :placement="isPc ? 'right' : 'bottom'">
-<!--        <template #content>-->
-<!--          <img class="icon-wechat-qrcode" :src="qrcode" alt="wx qrcode" />-->
-<!--        </template>-->
-<!--        <Icon icon="weixin" :size="28" colorful />-->
-      </el-tooltip>
-      <a
-        v-for="(item, index) in menuList"
-        class="menu-item"
-        :key="index"
-        :title="item.desc"
-        @click="item.handler"
-      >
-        <Icon :icon="item.icon" :size="28" colorful />
-        <span v-if="item.name" class="menu-item-name">{{ item.name }}</span>
-      </a>
     </div>
     <Icon icon="zhankai" :size="28" @click="toggleGroupListShow" />
     <UserSettingBox v-model="visible" />
