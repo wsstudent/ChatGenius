@@ -87,4 +87,16 @@ public class MessageDao extends ServiceImpl<MessageMapper, Message> {
                 .set(Message::getStatus, MessageStatusEnum.DELETE.getStatus());
         return this.update(wrapper);
     }
+
+    public Boolean deleteByRoomId(Long roomId) {
+        Integer count = this.lambdaQuery()
+                .eq(Message::getRoomId, roomId)
+                .count();
+        if (count == 0) {
+            return true;
+        }
+        LambdaQueryWrapper<Message> wrapper = new QueryWrapper<Message>().lambda()
+                .eq(Message::getRoomId, roomId);
+        return this.remove(wrapper);
+    }
 }
