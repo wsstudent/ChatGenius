@@ -253,8 +253,14 @@ public class RoomAppServiceImpl implements RoomAppService {
     @Transactional
     public Long addGroup(Long uid, GroupAddReq request) {
         RoomGroup roomGroup = roomService.createGroupRoom(uid);
+        // 默认将ChatGpt加入群组
+        User chatGPT = userDao.getByUsername("ChatGPT");
+        List<Long> uidList = request.getUidList();
+        if (!uidList.contains(chatGPT.getId())) {
+            uidList.add(chatGPT.getId());
+        }
         // 批量保存群成员
-        List<GroupMember> groupMembers = RoomAdapter.buildGroupMemberBatch(request.getUidList(), roomGroup.getId());
+        List<GroupMember> groupMembers = RoomAdapter.buildGroupMemberBatch(uidList, roomGroup.getId());
         groupMemberDao.saveBatch(groupMembers);
         // 发送邀请加群消息==》触发每个人的会话
         applicationEventPublisher.publishEvent(new GroupMemberAddEvent(this, roomGroup, groupMembers, uid));
