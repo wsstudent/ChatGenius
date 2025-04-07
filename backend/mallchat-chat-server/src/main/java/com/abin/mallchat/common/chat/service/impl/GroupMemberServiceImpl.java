@@ -124,6 +124,8 @@ public class GroupMemberServiceImpl implements IGroupMemberService {
         RoomGroup roomGroup = roomGroupDao.getByRoomId(roomId);
         AssertUtil.isNotEmpty(roomGroup, GroupErrorEnum.GROUP_NOT_EXIST);
 
+        Long groupId = roomGroup.getId(); // 获取正确的groupId
+
         // 2. 判断房间是否是大群聊 （大群聊禁止退出）
         Room room = roomDao.getById(roomId);
         AssertUtil.isFalse(room.isHotRoom(), GroupErrorEnum.NOT_ALLOWED_FOR_EXIT_GROUP);
@@ -142,7 +144,7 @@ public class GroupMemberServiceImpl implements IGroupMemberService {
             Boolean isDelContact = contactDao.removeAllByRoomId(roomId);
             AssertUtil.isTrue(isDelContact, CommonErrorEnum.SYSTEM_ERROR);
             // 4.3 删除群成员
-            Boolean isDelGroupMember = groupMemberDao.removeAllByGroupId(roomId);
+            Boolean isDelGroupMember = groupMemberDao.removeAllByGroupId(groupId);
             AssertUtil.isTrue(isDelGroupMember, CommonErrorEnum.SYSTEM_ERROR);
             // 4.4 删除消息记录 (逻辑删除)
             Boolean isDelMessage = messageDao.removeAllByRoomId(roomId);
