@@ -1,4 +1,5 @@
 .create-group-modal {
+
   .dialog-title {
     font-size: 18px;
     font-weight: bold;
@@ -6,6 +7,7 @@
     text-align: center;
     border-bottom: 1px solid var(--el-border-color-lighter);
   }
+
 
   .step-content {
     padding: 24px 20px;
@@ -37,6 +39,20 @@
 
       .el-form-item__label {
         font-weight: 500;
+
+        .optional-hint {
+          font-size: 12px;
+          color: var(--font-gray);
+          margin-left: 8px;
+          font-weight: normal;
+        }
+      }
+
+      .hint-text {
+        font-size: 12px;
+        color: var(--font-gray);
+        margin-top: 4px;
+        line-height: 1.4;
       }
 
       .avatar-uploader {
@@ -73,12 +89,14 @@
     }
   }
 
+
   .dialog-footer {
     width: 100%;
     display: flex;
     justify-content: flex-end;
     gap: 12px;
   }
+
 
   .select-user-container {
     .search-bar {
@@ -90,7 +108,6 @@
       overflow-y: auto;
       border: 1px solid var(--el-border-color-lighter);
       border-radius: 8px;
-      background-color: #fff;
 
       .contact-item {
         display: flex;

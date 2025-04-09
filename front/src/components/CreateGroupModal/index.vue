@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useRequest } from 'alova'
 import apis from '@/services/apis'
 import { RoomTypeEnum } from '@/enums'
@@ -33,17 +33,28 @@ const show = computed(() => globalStore.createGroupModalInfo.show)
 const isInvite = computed(() => globalStore.createGroupModalInfo.isInvite)
 const actionText = computed(() => isInvite.value ? '邀请' : '创建')
 
+// 关闭对话框并重置所有状态
 const close = () => {
-  globalStore.createGroupModalInfo.show = false
-  globalStore.createGroupModalInfo.isInvite = false
-  globalStore.createGroupModalInfo.selectedUid = []
+  // 批量更新状态，确保状态的一致性
+  nextTick(() => {
+    // 确保在下一次DOM更新循环后再设置下一组状态
+    globalStore.createGroupModalInfo = {
+      show: false,
+      isInvite: false,
+      selectedUid: []
+    }
+  })
+
+  // 重置本地状态
   activeStep.value = 0
   selectUser.value = []
   groupName.value = ''
   groupAvatar.value = ''
 }
 
+// 验证选择并前进到下一步
 const nextStep = () => {
+  // 至少要选择一个用户才能进入下一步
   if (selectUser.value.length === 0) {
     ElMessage.warning('请至少选择一位好友')
     return
@@ -51,42 +62,119 @@ const nextStep = () => {
   activeStep.value = 1
 }
 
+// 返回上一步（选择用户步骤）
 const prevStep = () => {
   activeStep.value = 0
 }
 
-const onSend = async () => {
-  if (selectUser.value.length === 0) return
+// 接收子组件传递的选中用户列表
+const onChecked = (checked: number[]) => {
+  // 直接更新本地状态
+  selectUser.value = checked
+}
 
-  if (!isInvite.value && !groupName.value.trim()) {
-    ElMessage.warning('请输入群组名称')
+// 添加状态跟踪
+const uploading = ref(false)
+const avatarFile = ref<File | null>(null)
+
+// 修改文件处理函数
+const handleFileChange = async (file: any) => {
+  if (!file || !file.raw) return
+
+  const rawFile = file.raw as File
+
+  // 检查文件类型
+  if (!['image/jpeg', 'image/png', 'image/gif'].includes(rawFile.type)) {
+    ElMessage.error('请上传图片格式文件')
     return
   }
 
+  // 检查文件大小，限制为2MB
+  if (rawFile.size > 2 * 1024 * 1024) {
+    ElMessage.error('图片大小不能超过2MB')
+    return
+  }
+
+  // 保存文件引用
+  avatarFile.value = rawFile
+
+  // 创建临时URL用于预览
+  groupAvatar.value = window.URL.createObjectURL(rawFile)
+}
+
+// 添加上传头像函数
+const uploadAvatar = async (): Promise<string | null> => {
+  if (!avatarFile.value) return null
+
+  try {
+    uploading.value = true
+
+    // 获取上传URL，场景为3（对应群组头像）
+    const uploadData = await apis.getUploadUrl({
+      fileName: avatarFile.value.name,
+      scene: 3  // 3代表群组头像
+    }).send()
+
+    if (uploadData?.uploadUrl) {
+      // 使用PUT方法上传文件到OSS
+      const response = await fetch(uploadData.uploadUrl, {
+        method: 'PUT',
+        body: avatarFile.value
+      })
+
+      if (!response.ok) {
+        throw new Error('头像上传失败')
+      }
+
+      return uploadData.downloadUrl
+    }
+
+    return null
+  } catch (error) {
+    console.error('群组头像上传失败:', error)
+    ElMessage.error('群组头像上传失败，请稍后重试')
+    return null
+  } finally {
+    uploading.value = false
+  }
+}
+
+// 修改发送函数
+const onSend = async () => {
+  if (selectUser.value.length === 0) return
+
   try {
     if (isInvite.value) {
+      // 邀请流程不变
       await invite({
         roomId: globalStore.currentSession.roomId,
         uidList: selectUser.value,
       })
       ElMessage.success('邀请成功')
-      groupStore.getGroupUserList(true)
+      await groupStore.getGroupUserList(true)
     } else {
-      // 修复类型错误
+      // 构建基础参数
       const params: CreateGroupParams = {
         uidList: selectUser.value
       }
 
+      // 设置群名称
       if (groupName.value.trim()) {
         params.name = groupName.value.trim()
       }
 
-      if (groupAvatar.value) {
-        params.avatar = groupAvatar.value
+      // 如果有选择头像，先上传
+      if (avatarFile.value) {
+        const avatarUrl = await uploadAvatar()
+        if (avatarUrl) {
+          params.avatar = avatarUrl
+        }
       }
 
+      // 调用创建群组API
       const { id } = await send(params)
       ElMessage.success('群聊创建成功')
+
       globalStore.currentSession.roomId = id
       globalStore.currentSession.type = RoomTypeEnum.Group
     }
@@ -96,16 +184,6 @@ const onSend = async () => {
   }
 }
 
-const onChecked = (checked: number[]) => {
-  selectUser.value = checked
-}
-
-// 修复URL类型错误
-const handleFileChange = (file: any) => {
-  if (file && file.raw) {
-    groupAvatar.value = window.URL.createObjectURL(file.raw)
-  }
-}
 </script>
 
 <template>
@@ -131,16 +209,24 @@ const handleFileChange = (file: any) => {
 
     <!-- 第二步：群组信息或邀请确认 -->
     <div v-else class="step-content">
+
+      <!-- 邀请确认 -->
       <template v-if="isInvite">
         <div class="confirm-invite">
           <!-- 简化邀请确认界面 -->
           <p class="invite-summary">您即将邀请 {{ selectUser.length }} 位好友加入群聊</p>
         </div>
       </template>
+
+      <!-- 创建群组信息 -->
       <template v-else>
+
         <div class="group-info-form">
           <el-form label-position="top">
-            <el-form-item label="群组名称" required>
+            <el-form-item>
+              <template #label>
+                群组名称 <span class="optional-hint">(选填，不填写将使用默认名称：创建者的名字 + "的群组")</span>
+              </template>
               <el-input
                 v-model="groupName"
                 placeholder="请输入群组名称"
@@ -148,7 +234,10 @@ const handleFileChange = (file: any) => {
                 show-word-limit
               />
             </el-form-item>
-            <el-form-item label="群组头像">
+            <el-form-item>
+              <template #label>
+                群组头像 <span class="optional-hint">(选填)</span>
+              </template>
               <div class="avatar-uploader">
                 <el-upload
                   class="uploader"
@@ -164,9 +253,11 @@ const handleFileChange = (file: any) => {
                   </div>
                 </el-upload>
               </div>
+
             </el-form-item>
           </el-form>
         </div>
+
       </template>
     </div>
 

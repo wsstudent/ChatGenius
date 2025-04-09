@@ -1,5 +1,5 @@
 <script setup lang="ts" name="SelectUser">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import Avatar from '@/components/Avatar/index.vue'
 
 import { useGlobalStore } from '@/stores/global'
@@ -13,9 +13,8 @@ const contactsList = computed(() => contactStore.contactsList)  // 获取联系�
 const selectedUid = computed(() => globalStore.createGroupModalInfo.selectedUid)  // 获取选中的联系人
 
 
-const searchQuery = ref('')  // 搜索框的值
-const selected = ref<number[]>([])  // 选中的联系人列表
 
+const selected = ref<number[]>([])  // 选中的联系人列表
 
 
 /**
@@ -30,6 +29,7 @@ const selected = ref<number[]>([])  // 选中的联系人列表
  */
 
 // 为每个联系人提前获取用户信息
+
 const userInfoMap = computed(() => {
   const map: Record<number, any> = {}
   if (contactsList.value) {
@@ -41,7 +41,8 @@ const userInfoMap = computed(() => {
   return map
 })
 
-// 修复过滤逻辑
+// 搜索框的过滤逻辑
+const searchQuery = ref('')  // 搜索框的值
 const filteredContacts = computed(() => {
   if (!contactsList.value) return []
 
@@ -64,38 +65,58 @@ watch(
   { immediate: true }
 )
 
-// 预先选中
+// 监听对话框显示状态，根据模式设置初始选择
 watch(
-  selectedUid,
-  (val) => {
-    val.forEach(uid => {
-      if (!selected.value.includes(uid)) {
-        selected.value.push(uid)
+  () => globalStore.createGroupModalInfo.show,
+  (newShow) => {
+    if (newShow) {
+      if (globalStore.createGroupModalInfo.isInvite) {
+        // 邀请模式下，初始化为空数组，不包含已在群组的成员
+        selected.value = []
+      } else {
+        selected.value = []
       }
-    })
+
+      // 初始化后通知父组件（空选择）
+      nextTick(() => {
+        emit('checked', selected.value)
+      })
+    }
   },
   { immediate: true }
 )
 
-const emit = defineEmits(['checked'])
 
+// 判断用户是否禁用选择（已在群组中的成员）
+const isDisabled = (uid: number) => {
+  return globalStore.createGroupModalInfo.isInvite &&
+    globalStore.createGroupModalInfo.selectedUid.includes(uid)
+}
+
+// 切换用户选择状态（选中/取消选中）
+const emit = defineEmits(['checked'])
 const toggleSelection = (uid: number) => {
+  // 如果用户已禁用，不允许选择
+  if (isDisabled(uid)) return
+
   const index = selected.value.indexOf(uid)
   if (index === -1) {
+    // 如果不在已选列表中，添加到列表
     selected.value.push(uid)
   } else {
+    // 如果已在列表中，从列表移除
     selected.value.splice(index, 1)
   }
+  // 通知父组件选择状态变化
+  // 这里的emit正常工作，因为它只在用户交互时触发一次
   emit('checked', selected.value)
 }
 
+// 判断用户是否已被选中
 const isSelected = (uid: number) => {
   return selected.value.includes(uid)
 }
 
-const isDisabled = (uid: number) => {
-  return selectedUid.value.includes(uid)
-}
 
 // 获取用户名的安全方法
 const getUserName = (uid: number): string => {
@@ -120,14 +141,14 @@ const getUserAvatar = (uid: number): string => {
           placeholder="搜索好友"
           clearable
         >
-          <template #prepend>
-            <el-icon><i-ep-search /></el-icon>
-          </template>
+            <template #prepend>
+              <el-icon><i-ep-search /></el-icon>
+            </template>
         </el-input>
       </div>
 
       <!-- 联系人列表 -->
-      <div class="contact-list">
+      <div class="contacts-list">
         <div v-if="filteredContacts.length === 0" class="no-results">
           没有找到匹配的好友
         </div>
@@ -156,9 +177,7 @@ const getUserAvatar = (uid: number): string => {
             <div class="contact-name">{{ getUserName(contact.uid) }}</div>
           </div>
         </div>
-
       </div>
-
 
  </div>
 </template>
