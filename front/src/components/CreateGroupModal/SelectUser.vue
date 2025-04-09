@@ -66,16 +66,13 @@ watch(
 )
 
 // 监听对话框显示状态，根据模式设置初始选择
+// 在 SelectUser.vue 中简化监听器
 watch(
   () => globalStore.createGroupModalInfo.show,
   (newShow) => {
     if (newShow) {
-      if (globalStore.createGroupModalInfo.isInvite) {
-        // 邀请模式下，初始化为空数组，不包含已在群组的成员
-        selected.value = []
-      } else {
-        selected.value = []
-      }
+      // 无论哪种模式都初始化为空选择
+      selected.value = []
 
       // 初始化后通知父组件（空选择）
       nextTick(() => {
@@ -85,7 +82,6 @@ watch(
   },
   { immediate: true }
 )
-
 
 // 判断用户是否禁用选择（已在群组中的成员）
 const isDisabled = (uid: number) => {
