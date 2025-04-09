@@ -95,12 +95,12 @@ export const isDiffNow = ({
 }
 
 /**
- * 距离现在 10 分钟了
+ * 距离现在 5 分钟了
  * @param {ConfigType} time 输入时间
  * @param {OpUnitType} unit 间隔单位
  * @param {number} diff 间隔值
  * @returns boolean 输入时间是否间隔 now 间隔值以上。
  */
 export const isDiffNow10Min = (time: ConfigType): boolean => {
-  return isDiffNow({ time, unit: 'minute', diff: 10 })
+  return isDiffNow({ time, unit: 'minute', diff: 5 })
 }
