@@ -12,7 +12,6 @@ import java.util.List;
 
 /**
  * Description: 新建群组
- * Author: <a href="https://github.com/zongzibinbin">abin</a>
  * Date: 2023-03-29
  */
 @Data
@@ -24,4 +23,10 @@ public class GroupAddReq {
     @Size(min = 1, max = 50)
     @ApiModelProperty("邀请的uid")
     private List<Long> uidList;
+
+    @ApiModelProperty("群组名称")
+    private String name;
+
+    @ApiModelProperty("群组头像")
+    private String avatar;
 }
