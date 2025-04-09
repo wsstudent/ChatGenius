@@ -1,5 +1,5 @@
 <script setup lang="ts" name="SendBar">
-import { computed, onBeforeUnmount, onMounted, provide, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue'
 import type { ElInput } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useWsLoginStore } from '@/stores/ws'
@@ -230,6 +230,15 @@ const handleRightClick = (event: Event, id: number) => {
   event.preventDefault()
   tempEmojiId.value = tempEmojiId.value === id ? -1 : id
 }
+
+watch(
+  () => panelIndex.value,
+  async (newVal) => {
+    if (newVal === 1 && emojiList.value.length === 0) {
+      await emojiStore.getEmojiList()
+    }
+  }
+)
 
 const sendEmoji = throttle((url: string) => {
   send(MsgEnum.EMOJI, { url })
