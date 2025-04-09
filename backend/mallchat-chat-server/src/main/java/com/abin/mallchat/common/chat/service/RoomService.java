@@ -30,5 +30,9 @@ public interface RoomService {
      */
     RoomGroup createGroupRoom(Long uid);
 
-
+    /**
+     * 更新群组信息
+     * @param roomGroup
+     */
+    void updateRoomGroup(RoomGroup roomGroup);
 }

@@ -17,13 +17,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Description: 消息适配器
- * Author: <a href="https://github.com/zongzibinbin">abin</a>
- * Date: 2023-03-26
+ * 房间适配器
+ * 负责聊天室相关的数据转换、消息构建和成员管理
+ * 处理UI展示层面的转换和业务逻辑相关的操作
  */
 public class RoomAdapter {
 
-
+    /**
+     * 构建房间响应对象列表
+     * 将房间实体转换为前端展示需要的响应对象
+     *
+     * @param list 房间实体列表
+     * @return 房间响应对象列表
+     */
     public static List<ChatRoomResp> buildResp(List<Room> list) {
         return list.stream()
                 .map(a -> {
@@ -34,6 +40,13 @@ public class RoomAdapter {
                 }).collect(Collectors.toList());
     }
 
+    /**
+     * 构建消息已读响应对象列表
+     * 从联系人实体中提取已读信息
+     *
+     * @param list 联系人实体列表
+     * @return 消息已读响应对象列表
+     */
     public static List<ChatMessageReadResp> buildReadResp(List<Contact> list) {
         return list.stream().map(contact -> {
             ChatMessageReadResp resp = new ChatMessageReadResp();
@@ -42,6 +55,14 @@ public class RoomAdapter {
         }).collect(Collectors.toList());
     }
 
+    /**
+     * 批量构建群成员对象
+     * 为新加入群组的用户创建成员记录
+     *
+     * @param uidList 用户ID列表
+     * @param groupId 群组ID
+     * @return 群成员对象列表
+     */
     public static List<GroupMember> buildGroupMemberBatch(List<Long> uidList, Long groupId) {
         return uidList.stream()
                 .distinct()
@@ -54,6 +75,15 @@ public class RoomAdapter {
                 }).collect(Collectors.toList());
     }
 
+    /**
+     * 构建群成员添加的系统消息
+     * 当新成员被邀请加入群聊时，创建一条系统通知消息
+     *
+     * @param groupRoom 群聊房间信息
+     * @param inviter 邀请人用户信息
+     * @param member 被邀请成员的用户信息映射
+     * @return 聊天消息请求对象
+     */
     public static ChatMessageReq buildGroupAddMessage(RoomGroup groupRoom, User inviter, Map<Long, User> member) {
         ChatMessageReq chatMessageReq = new ChatMessageReq();
         chatMessageReq.setRoomId(groupRoom.getRoomId());

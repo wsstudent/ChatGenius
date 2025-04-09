@@ -26,6 +26,7 @@ export const useGlobalStore = defineStore('global', () => {
     show: false,
     uid: undefined,
   })
+
   // 创建群聊
   const createGroupModalInfo = reactive<{
     show: boolean

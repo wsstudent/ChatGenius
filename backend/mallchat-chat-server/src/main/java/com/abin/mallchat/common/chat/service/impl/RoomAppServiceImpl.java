@@ -252,38 +252,68 @@ public class RoomAppServiceImpl implements RoomAppService {
         applicationEventPublisher.publishEvent(new GroupMemberAddEvent(this, roomGroup, groupMembers, uid));
     }
 
+    /**
+     * 创建新群组
+     *
+     * @param uid 创建者用户ID
+     * @param request 群组创建请求参数
+     * @return 新创建的群组房间ID
+     */
     @Override
     @Transactional
     public Long addGroup(Long uid, GroupAddReq request) {
-        // 创建群组基础结构
+        // 第一步：创建群组基础结构 - 包含默认的群名称和头像
+        // 在 roomService.createGroupRoom 中通过 ChatAdapter.buildGroupRoom 设置默认群名称和头像
         RoomGroup roomGroup = roomService.createGroupRoom(uid);
 
-        // 初始化用户列表，确保不为 null
+        // 第二步：如果请求中有自定义群名称，则覆盖默认群名称
+        if (request.getName() != null && !request.getName().isEmpty()) {
+            roomGroup.setName(request.getName()); // 使用用户自定义群名称覆盖默认名称
+        }
+
+        // 第三步：如果请求中有自定义群头像，则覆盖默认群头像
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+            roomGroup.setAvatar(request.getAvatar()); // 使用用户自定义群头像覆盖默认头像
+        }
+
+        // 第四步：如果有自定义的名称或头像，更新群组信息到数据库
+        if (request.getName() != null || request.getAvatar() != null) {
+            roomService.updateRoomGroup(roomGroup); // 调用更新方法保存自定义设置
+        }
+
+        // 第五步：初始化用户列表，确保不为null
         List<Long> uidList = Optional.ofNullable(request.getUidList())
                 .orElse(new ArrayList<>());
 
-        // 添加默认成员（如 ChatGPT）
+        // 第六步：添加默认成员(如ChatGPT)到群组
         addDefaultMemberIfNeeded(uidList);
 
-        // 批量保存群成员
+        // 第七步：批量保存群成员
         if (!CollectionUtil.isEmpty(uidList)) {
+            // 构建群成员对象列表
             List<GroupMember> groupMembers = RoomAdapter.buildGroupMemberBatch(uidList, roomGroup.getId());
             groupMemberDao.saveBatch(groupMembers);
 
-            // 发送邀请加群消息
+            // 第八步：发布群成员添加事件，可能用于消息通知等后续处理
             applicationEventPublisher.publishEvent(new GroupMemberAddEvent(this, roomGroup, groupMembers, uid));
         }
 
+        // 返回新创建的群组房间ID
         return roomGroup.getRoomId();
     }
 
     /**
-     * 添加默认群成员
-     * @param uidList 当前用户列表
+     * 添加默认群成员（如ChatGPT）
+     * 这个方法尝试添加系统预设的成员到群组中，增强群组的互动性
+     *
+     * @param uidList 当前群成员用户ID列表
      */
     private void addDefaultMemberIfNeeded(List<Long> uidList) {
         try {
+            // 查找名为"ChatGPT"的用户
             User chatGPT = userDao.getByUsername("ChatGPT");
+
+            // 如果ChatGPT用户存在且不在当前成员列表中，则添加
             if (chatGPT != null && !uidList.contains(chatGPT.getId())) {
                 uidList.add(chatGPT.getId());
                 log.info("已将 ChatGPT(uid={}) 添加到群组成员中", chatGPT.getId());
@@ -291,6 +321,7 @@ public class RoomAppServiceImpl implements RoomAppService {
                 log.warn("未找到 ChatGPT 用户，跳过添加默认成员");
             }
         } catch (Exception e) {
+            // 添加失败不影响群组创建，只记录日志
             log.warn("添加默认成员 ChatGPT 失败", e);
         }
     }

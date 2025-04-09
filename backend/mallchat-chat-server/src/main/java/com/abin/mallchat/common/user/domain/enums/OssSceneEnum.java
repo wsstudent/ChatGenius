@@ -19,6 +19,7 @@ public enum OssSceneEnum {
     AVATAR(0, "头像", "/avatar"),
     CHAT(1, "聊天", "/chat"),
     EMOJI(2, "表情包", "/emoji"),
+    ROOM_AVATAR(3, "聊天室头像", "/room/avatar"),
     ;
 
     private final Integer type;
